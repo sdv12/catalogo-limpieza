@@ -8,8 +8,17 @@ import {
   productoSchema,
   validarPreciosMinimos,
   preciosValidos,
+  generarSkuVariante,
   type ProductoInput,
+  type VarianteInput,
 } from "@/lib/validation/product";
+
+/** SKU de la variante: el que puso el usuario o uno generado si lo dejó vacío. */
+function skuDeVariante(v: VarianteInput, dato: ProductoInput): string {
+  return v.sku && v.sku.trim()
+    ? v.sku.trim()
+    : generarSkuVariante(dato.base_sku, dato.name, v.name);
+}
 
 function revalidar(slug: string, id?: string) {
   revalidatePath(`/panel/${slug}/productos`);
@@ -87,16 +96,18 @@ export async function crearProducto(
 
   // variantes + precios
   for (const [i, v] of dato.variants.entries()) {
+    const sku = skuDeVariante(v, dato);
     const { data: variante, error: eVar } = await supabase
       .from("product_variants")
       .insert({
         catalog_id: catalogo.id,
         product_id: prod.id,
         name: v.name,
-        sku: v.sku,
+        sku,
         size_value: v.size_value,
         size_unit: v.size_unit,
         barcode: v.barcode,
+        cost: v.cost,
         stock: v.stock_inicial ?? 0,
         min_stock: v.min_stock ?? 0,
         position: i,
@@ -109,7 +120,7 @@ export async function crearProducto(
     if (eVar || !variante) {
       return cleanup(
         /duplicate|unique/i.test(eVar?.message ?? "")
-          ? `El SKU "${v.sku}" ya existe en este catálogo`
+          ? `El SKU "${sku}" ya existe en este catálogo`
           : eVar?.message ?? "No se pudieron crear las presentaciones",
       );
     }
@@ -248,15 +259,17 @@ export async function actualizarProducto(
 
   for (const [i, v] of dato.variants.entries()) {
     let variantId = v.id;
+    const sku = skuDeVariante(v, dato);
     if (variantId && idsActuales.has(variantId)) {
       const { error } = await supabase
         .from("product_variants")
         .update({
           name: v.name,
-          sku: v.sku,
+          sku,
           size_value: v.size_value,
           size_unit: v.size_unit,
           barcode: v.barcode,
+          cost: v.cost,
           min_stock: v.min_stock ?? 0,
           position: i,
           updated_by: uid,
@@ -266,7 +279,7 @@ export async function actualizarProducto(
         return {
           ok: false,
           message: /duplicate|unique/i.test(error.message)
-            ? `El SKU "${v.sku}" ya existe en este catálogo`
+            ? `El SKU "${sku}" ya existe en este catálogo`
             : error.message,
         };
       }
@@ -277,10 +290,11 @@ export async function actualizarProducto(
           catalog_id: catalogo.id,
           product_id: productId,
           name: v.name,
-          sku: v.sku,
+          sku,
           size_value: v.size_value,
           size_unit: v.size_unit,
           barcode: v.barcode,
+          cost: v.cost,
           stock: v.stock_inicial ?? 0,
           min_stock: v.min_stock ?? 0,
           position: i,
@@ -293,7 +307,7 @@ export async function actualizarProducto(
         return {
           ok: false,
           message: /duplicate|unique/i.test(error?.message ?? "")
-            ? `El SKU "${v.sku}" ya existe en este catálogo`
+            ? `El SKU "${sku}" ya existe en este catálogo`
             : error?.message ?? "No se pudo agregar la presentación",
         };
       }

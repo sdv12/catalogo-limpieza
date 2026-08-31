@@ -185,11 +185,17 @@ function CatalogoRow({
               {miembros.map((m) => (
                 <li
                   key={m.user_id}
-                  className="flex items-center gap-3 px-3 py-2 text-sm"
+                  className="flex items-center gap-2 px-3 py-2 text-sm"
                 >
-                  <span className="min-w-0 flex-1 truncate">
-                    {m.full_name ? `${m.full_name} · ` : ""}
-                    <span className="text-texto-sec">{m.email}</span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-texto">
+                      {m.full_name || m.email || m.user_id.slice(0, 8)}
+                    </span>
+                    {m.full_name && m.email && (
+                      <span className="truncate text-xs text-texto-tenue">
+                        {m.email}
+                      </span>
+                    )}
                   </span>
                   <Select
                     value={m.role}
@@ -202,7 +208,7 @@ function CatalogoRow({
                       notificar(r);
                       if (r.ok) onCambio();
                     }}
-                    className="h-8 w-28"
+                    className="h-8 w-32 shrink-0"
                   >
                     <option value="editor">Edición</option>
                     <option value="viewer">Solo lectura</option>
@@ -210,7 +216,7 @@ function CatalogoRow({
                   <button
                     type="button"
                     onClick={() => setMiembroAQuitar(m)}
-                    className="rounded-comp-sm p-1.5 text-texto-sec hover:bg-error-suave hover:text-error"
+                    className="shrink-0 rounded-comp-sm p-1.5 text-texto-sec hover:bg-error-suave hover:text-error"
                     aria-label="Quitar"
                   >
                     <Trash2 size={15} />
@@ -243,9 +249,18 @@ function CatalogoRow({
                     required
                   />
                 </div>
+                <div className="flex-1">
+                  <Label htmlFor={`fn-${catalogo.id}`}>Nombre (opcional)</Label>
+                  <Input id={`fn-${catalogo.id}`} name="fullName" />
+                </div>
                 <div>
                   <Label htmlFor={`r-${catalogo.id}`}>Rol</Label>
-                  <Select id={`r-${catalogo.id}`} name="role" defaultValue="editor">
+                  <Select
+                    id={`r-${catalogo.id}`}
+                    name="role"
+                    defaultValue="editor"
+                    className="w-full sm:w-32"
+                  >
                     <option value="editor">Edición</option>
                     <option value="viewer">Solo lectura</option>
                   </Select>

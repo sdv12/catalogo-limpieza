@@ -450,6 +450,7 @@ export type Database = {
           attributes: Json
           barcode: string | null
           catalog_id: string
+          cost: number | null
           created_at: string
           created_by: string | null
           id: string
@@ -470,6 +471,7 @@ export type Database = {
           attributes?: Json
           barcode?: string | null
           catalog_id: string
+          cost?: number | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -490,6 +492,7 @@ export type Database = {
           attributes?: Json
           barcode?: string | null
           catalog_id?: string
+          cost?: number | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -810,6 +813,7 @@ export type Database = {
           attributes: Json
           barcode: string | null
           catalog_id: string
+          cost: number | null
           created_at: string
           created_by: string | null
           id: string

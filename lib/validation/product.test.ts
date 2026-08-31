@@ -49,6 +49,7 @@ describe("validarPreciosMinimos", () => {
     size_value: null,
     size_unit: null,
     barcode: null,
+    cost: null,
     min_stock: 0,
     stock_inicial: 0,
   };

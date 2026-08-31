@@ -35,10 +35,13 @@ type VarState = {
   size_value: string;
   size_unit: string;
   barcode: string;
+  cost: string;
   min_stock: string;
   stock_inicial: string;
   stock_actual?: number;
   prices: Record<string, string>;
+  /** % de ganancia por nivel (helper, no se guarda). */
+  margins: Record<string, string>;
 };
 
 export type ProductoExistente = {
@@ -58,6 +61,7 @@ export type ProductoExistente = {
     size_value: number | null;
     size_unit: string | null;
     barcode: string | null;
+    cost: number | null;
     stock: number;
     min_stock: number;
     prices: Record<string, number>;
@@ -75,10 +79,21 @@ function varianteVacia(tiers: Tier[]): VarState {
     size_value: "",
     size_unit: "",
     barcode: "",
+    cost: "",
     min_stock: "0",
     stock_inicial: "0",
     prices: Object.fromEntries(tiers.map((t) => [t.id, ""])),
+    margins: Object.fromEntries(tiers.map((t) => [t.id, ""])),
   };
+}
+
+/** precio = costo × (1 + %/100), redondeado a 2 decimales */
+function precioDesdeMargen(costo: number, pct: number): string {
+  return (Math.round(costo * (1 + pct / 100) * 100) / 100).toString();
+}
+function margenDesdePrecio(costo: number, precio: number): string {
+  if (costo <= 0) return "";
+  return (Math.round((precio / costo - 1) * 1000) / 10).toString();
 }
 
 export function ProductForm({
@@ -119,11 +134,20 @@ export function ProductForm({
           size_value: v.size_value?.toString() ?? "",
           size_unit: v.size_unit ?? "",
           barcode: v.barcode ?? "",
+          cost: v.cost != null ? String(v.cost) : "",
           min_stock: String(v.min_stock),
           stock_inicial: "0",
           stock_actual: v.stock,
           prices: Object.fromEntries(
             tiers.map((t) => [t.id, v.prices[t.id]?.toString() ?? ""]),
+          ),
+          margins: Object.fromEntries(
+            tiers.map((t) => [
+              t.id,
+              v.cost && v.prices[t.id] != null
+                ? margenDesdePrecio(Number(v.cost), Number(v.prices[t.id]))
+                : "",
+            ]),
           ),
         }))
       : [varianteVacia(tiers)],
@@ -135,6 +159,60 @@ export function ProductForm({
 
   const setVar = (key: string, patch: Partial<VarState>) =>
     setVariants((vs) => vs.map((v) => (v.key === key ? { ...v, ...patch } : v)));
+
+  /** Cambia el % de un nivel y recalcula su precio desde el costo. */
+  function setMargen(vKey: string, tierId: string, pct: string) {
+    setVariants((vs) =>
+      vs.map((v) => {
+        if (v.key !== vKey) return v;
+        const costo = parsearNumero(v.cost) ?? 0;
+        const p = parsearNumero(pct);
+        const precio =
+          costo > 0 && p != null ? precioDesdeMargen(costo, p) : v.prices[tierId];
+        return {
+          ...v,
+          margins: { ...v.margins, [tierId]: pct },
+          prices: { ...v.prices, [tierId]: precio },
+        };
+      }),
+    );
+  }
+
+  /** Cambia el costo y recalcula los precios de los niveles con % cargado. */
+  function setCosto(vKey: string, costo: string) {
+    setVariants((vs) =>
+      vs.map((v) => {
+        if (v.key !== vKey) return v;
+        const c = parsearNumero(costo);
+        const prices = { ...v.prices };
+        if (c && c > 0) {
+          for (const [tid, m] of Object.entries(v.margins)) {
+            const pm = parsearNumero(m);
+            if (pm != null) prices[tid] = precioDesdeMargen(c, pm);
+          }
+        }
+        return { ...v, cost: costo, prices };
+      }),
+    );
+  }
+
+  /** Cambia un precio a mano y actualiza el % que muestra. */
+  function setPrecio(vKey: string, tierId: string, precio: string) {
+    setVariants((vs) =>
+      vs.map((v) => {
+        if (v.key !== vKey) return v;
+        const c = parsearNumero(v.cost) ?? 0;
+        const pr = parsearNumero(precio);
+        const margen =
+          c > 0 && pr != null ? margenDesdePrecio(c, pr) : v.margins[tierId];
+        return {
+          ...v,
+          prices: { ...v.prices, [tierId]: precio },
+          margins: { ...v.margins, [tierId]: margen },
+        };
+      }),
+    );
+  }
 
   function toggleExtra(id: string) {
     setCategoriasExtra((cs) =>
@@ -148,7 +226,6 @@ export function ProductForm({
     if (!categoriaPrincipal) errs.push("Elegí una categoría principal.");
     variants.forEach((v, i) => {
       if (!v.name.trim()) errs.push(`Presentación ${i + 1}: falta el nombre.`);
-      if (!v.sku.trim()) errs.push(`Presentación ${i + 1}: falta el SKU.`);
       const tienePrecio = Object.values(v.prices).some(
         (p) => (parsearNumero(p) ?? 0) > 0,
       );
@@ -179,6 +256,7 @@ export function ProductForm({
         size_value: parsearNumero(v.size_value),
         size_unit: (v.size_unit || null) as ProductoInput["variants"][number]["size_unit"],
         barcode: v.barcode.trim() || null,
+        cost: parsearNumero(v.cost),
         min_stock: parsearNumero(v.min_stock) ?? 0,
         stock_inicial: edicion ? 0 : parsearNumero(v.stock_inicial) ?? 0,
         prices: v.prices,
@@ -386,10 +464,11 @@ export function ProductForm({
                   />
                 </div>
                 <div>
-                  <Label requerido>SKU</Label>
+                  <Label>SKU</Label>
                   <Input
                     value={v.sku}
                     onChange={(e) => setVar(v.key, { sku: e.target.value })}
+                    placeholder="se genera solo"
                   />
                 </div>
                 <div>
@@ -397,6 +476,16 @@ export function ProductForm({
                   <Input
                     value={v.barcode}
                     onChange={(e) => setVar(v.key, { barcode: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Costo</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={v.cost}
+                    onChange={(e) => setCosto(v.key, e.target.value)}
+                    placeholder="0,00"
                   />
                 </div>
                 <div>
@@ -468,23 +557,50 @@ export function ProductForm({
 
               <div className="mt-3">
                 <Label>Precios por nivel</Label>
-                <div className="grid gap-2 sm:grid-cols-3">
+                <FieldHint>
+                  Cargá el <strong>costo</strong> y un <strong>%</strong> de
+                  ganancia y el precio se calcula solo. También podés escribir el
+                  precio a mano.
+                </FieldHint>
+                <div className="mt-1 grid gap-2 sm:grid-cols-3">
                   {tiers.map((t) => (
                     <div key={t.id}>
                       <span className="mb-0.5 block text-xs text-texto-sec">
                         {t.name}
                       </span>
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={v.prices[t.id] ?? ""}
-                        onChange={(e) =>
-                          setVar(v.key, {
-                            prices: { ...v.prices, [t.id]: e.target.value },
-                          })
-                        }
-                        placeholder="0,00"
-                      />
+                      <div className="flex gap-1">
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={v.prices[t.id] ?? ""}
+                          onChange={(e) => setPrecio(v.key, t.id, e.target.value)}
+                          placeholder="0,00"
+                          className="flex-1"
+                          aria-label={`Precio ${t.name}`}
+                        />
+                        <div className="relative w-16 shrink-0">
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={v.margins[t.id] ?? ""}
+                            onChange={(e) =>
+                              setMargen(v.key, t.id, e.target.value)
+                            }
+                            placeholder="%"
+                            disabled={!parsearNumero(v.cost)}
+                            title={
+                              parsearNumero(v.cost)
+                                ? "% de ganancia sobre el costo"
+                                : "Cargá el costo para usar el %"
+                            }
+                            className="pr-4 text-center"
+                            aria-label={`% ganancia ${t.name}`}
+                          />
+                          <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-texto-tenue">
+                            %
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

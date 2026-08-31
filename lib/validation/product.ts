@@ -17,10 +17,16 @@ export function parsearNumero(raw: unknown): number | null {
 export const varianteSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().trim().min(1, "Nombre de la presentación obligatorio"),
-  sku: z.string().trim().min(1, "SKU obligatorio"),
+  sku: z.preprocess((v) => (v == null ? "" : String(v).trim()), z.string()),
   size_value: z.number().positive("Debe ser mayor a 0").nullable().default(null),
   size_unit: z.enum(UNIDADES_MEDIDA).nullable().default(null),
   barcode: optStr,
+  cost: z
+    .preprocess(
+      (v) => (v === "" || v == null ? null : v),
+      z.number().min(0).nullable(),
+    )
+    .default(null),
   min_stock: z.number().min(0).default(0),
   stock_inicial: z.number().default(0),
   /** { [price_tier_id]: "monto como texto" } */
@@ -43,6 +49,29 @@ export const productoSchema = z.object({
 
 export type ProductoInput = z.infer<typeof productoSchema>;
 export type VarianteInput = z.infer<typeof varianteSchema>;
+
+/** SKU automático cuando el usuario lo deja en blanco. Único por catálogo. */
+export function generarSkuVariante(
+  baseSku: string | null | undefined,
+  nombreProducto: string,
+  nombreVariante: string,
+): string {
+  const raiz = (baseSku || nombreProducto || "prod")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 20);
+  const suf = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const pres = nombreVariante
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "")
+    .slice(0, 6);
+  return [raiz || "PROD", pres, suf].filter(Boolean).join("-");
+}
 
 /** Precios válidos (> 0) de una variante: [{tierId, price}]. */
 export function preciosValidos(

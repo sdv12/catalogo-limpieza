@@ -3,12 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronUp, ChevronDown, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import {
+  ChevronUp,
+  ChevronDown,
+  Plus,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
 import { Badge } from "@/components/ui/Badge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { cn } from "@/lib/cn";
 import { notificar } from "@/lib/ui";
 import type { CategoriaNodo } from "@/app/panel/[catalogo]/categorias/page";
 import {
@@ -144,12 +155,12 @@ function Nodo({
     if (r.ok) onCambio();
   }
 
+  const btn =
+    "flex size-7 items-center justify-center rounded-comp-sm text-texto-sec transition-colors hover:bg-superficie-sec hover:text-texto disabled:opacity-30 disabled:hover:bg-transparent";
+
   return (
     <li>
-      <div
-        className="flex items-center gap-2 rounded-comp-sm border border-linea bg-superficie px-3 py-2"
-        style={{ marginLeft: nivel * 20 }}
-      >
+      <div className="flex min-h-11 items-center gap-2 rounded-comp-sm border border-linea bg-superficie px-2.5 py-1.5">
         {editando ? (
           <>
             <Input
@@ -157,6 +168,16 @@ function Nodo({
               onChange={(e) => setNombre(e.target.value)}
               className="h-8 flex-1"
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter")
+                  accion(() => renombrarCategoria(slug, nodo.id, nombre)).then(() =>
+                    setEditando(false),
+                  );
+                if (e.key === "Escape") {
+                  setNombre(nodo.name);
+                  setEditando(false);
+                }
+              }}
             />
             <button
               onClick={() =>
@@ -164,7 +185,7 @@ function Nodo({
                   setEditando(false),
                 )
               }
-              className="rounded-comp-sm p-1.5 text-exito hover:bg-exito-suave"
+              className={cn(btn, "text-exito hover:bg-exito-suave hover:text-exito")}
               aria-label="Guardar"
             >
               <Check size={15} />
@@ -174,7 +195,7 @@ function Nodo({
                 setNombre(nodo.name);
                 setEditando(false);
               }}
-              className="rounded-comp-sm p-1.5 text-texto-sec hover:bg-superficie-sec"
+              className={btn}
               aria-label="Cancelar"
             >
               <X size={15} />
@@ -182,23 +203,19 @@ function Nodo({
           </>
         ) : (
           <>
-            <span className="flex-1 text-sm text-texto">
-              {nodo.name}
-              {!nodo.is_active && (
-                <Badge tono="alerta" className="ml-2">
-                  Inactiva
-                </Badge>
-              )}
+            <span className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="truncate text-sm text-texto">{nodo.name}</span>
+              {!nodo.is_active && <Badge tono="alerta">Inactiva</Badge>}
             </span>
-            <span className="text-xs text-texto-tenue">
+            <span className="shrink-0 text-xs tabular-nums text-texto-tenue">
               {nodo.productos} prod.
             </span>
             {!soloLectura && (
-              <>
+              <div className="flex shrink-0 items-center gap-0.5 border-l border-linea pl-1.5">
                 <button
                   disabled={esPrimero}
                   onClick={() => accion(() => moverCategoria(slug, nodo.id, "arriba"))}
-                  className="rounded-comp-sm p-1 text-texto-sec hover:bg-superficie-sec disabled:opacity-30"
+                  className={btn}
                   aria-label="Subir"
                 >
                   <ChevronUp size={15} />
@@ -206,14 +223,14 @@ function Nodo({
                 <button
                   disabled={esUltimo}
                   onClick={() => accion(() => moverCategoria(slug, nodo.id, "abajo"))}
-                  className="rounded-comp-sm p-1 text-texto-sec hover:bg-superficie-sec disabled:opacity-30"
+                  className={btn}
                   aria-label="Bajar"
                 >
                   <ChevronDown size={15} />
                 </button>
                 <button
                   onClick={() => setEditando(true)}
-                  className="rounded-comp-sm p-1.5 text-texto-sec hover:bg-superficie-sec"
+                  className={btn}
                   aria-label="Renombrar"
                 >
                   <Pencil size={14} />
@@ -222,25 +239,27 @@ function Nodo({
                   onClick={() =>
                     accion(() => toggleCategoria(slug, nodo.id, !nodo.is_active))
                   }
-                  className="rounded-comp-sm px-1.5 py-1 text-xs text-texto-sec hover:bg-superficie-sec"
+                  className={btn}
+                  aria-label={nodo.is_active ? "Desactivar" : "Activar"}
+                  title={nodo.is_active ? "Desactivar" : "Activar"}
                 >
-                  {nodo.is_active ? "Desactivar" : "Activar"}
+                  {nodo.is_active ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
                 <button
                   onClick={() => setAEliminar(true)}
-                  className="rounded-comp-sm p-1.5 text-texto-sec hover:bg-error-suave hover:text-error"
+                  className={cn(btn, "hover:bg-error-suave hover:text-error")}
                   aria-label="Eliminar"
                 >
                   <Trash2 size={14} />
                 </button>
-              </>
+              </div>
             )}
           </>
         )}
       </div>
 
       {nodo.hijos.length > 0 && (
-        <ul className="mt-1 space-y-1">
+        <ul className="mt-1 space-y-1 border-l border-linea pl-3">
           {nodo.hijos.map((h, i) => (
             <Nodo
               key={h.id}

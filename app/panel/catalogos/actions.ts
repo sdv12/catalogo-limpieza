@@ -148,6 +148,13 @@ export async function agregarMiembro(
     }
     perfil = perfil ?? { id: creado.user.id };
     extra = { password, email };
+  } else if (fullName) {
+    // Perfil existente sin nombre → completarlo
+    await supabase
+      .from("profiles")
+      .update({ full_name: fullName })
+      .eq("id", perfil.id)
+      .or("full_name.is.null,full_name.eq.");
   }
 
   const { error } = await supabase

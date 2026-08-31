@@ -23,7 +23,7 @@ export default async function EditarProductoPage({
       `id, name, description, brand, base_sku, primary_category_id, status, is_deleted,
        product_categories(category_id, is_primary),
        product_images(storage_path, alt, position, is_primary),
-       product_variants(id, name, sku, size_value, size_unit, barcode, stock, min_stock, position, is_deleted,
+       product_variants(id, name, sku, size_value, size_unit, barcode, cost, stock, min_stock, position, is_deleted,
          variant_prices(price_tier_id, price))`,
     )
     .eq("id", id)
@@ -65,6 +65,7 @@ export default async function EditarProductoPage({
         size_value: v.size_value,
         size_unit: v.size_unit,
         barcode: v.barcode,
+        cost: v.cost != null ? Number(v.cost) : null,
         stock: Number(v.stock),
         min_stock: Number(v.min_stock),
         prices: Object.fromEntries(
