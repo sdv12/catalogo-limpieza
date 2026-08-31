@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Tokens de diseño — panel de catálogo
+   Paleta clara, simple, pensada para usuarios no técnicos.
+   ============================================================ */
+:root {
+  --fondo: #f6f7f9;
+  --superficie: #ffffff;
+  --superficie-sec: #f1f3f5;
+  --linea: #e2e5e9;
+  --linea-fuerte: #cdd2d8;
+
+  --texto: #1a1d21;
+  --texto-sec: #5c6570;
+  --texto-tenue: #8a929c;
+
+  --primario: #0d9488;      /* teal 600 */
+  --primario-fuerte: #0f766e;
+  --primario-suave: #ccfbf1;
+  --primario-texto: #ffffff;
+
+  --exito: #15803d;
+  --exito-suave: #dcfce7;
+  --alerta: #b45309;
+  --alerta-suave: #fef3c7;
+  --error: #b91c1c;
+  --error-suave: #fee2e2;
+  --info: #1d4ed8;
+  --info-suave: #dbeafe;
+
+  --radio: 0.625rem;
+  --radio-sm: 0.4rem;
+  --sombra: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --sombra-pop: 0 4px 6px -1px rgba(16, 24, 40, 0.1), 0 2px 4px -2px rgba(16, 24, 40, 0.1);
+}
+
+@theme inline {
+  --color-fondo: var(--fondo);
+  --color-superficie: var(--superficie);
+  --color-superficie-sec: var(--superficie-sec);
+  --color-linea: var(--linea);
+  --color-linea-fuerte: var(--linea-fuerte);
+  --color-texto: var(--texto);
+  --color-texto-sec: var(--texto-sec);
+  --color-texto-tenue: var(--texto-tenue);
+  --color-primario: var(--primario);
+  --color-primario-fuerte: var(--primario-fuerte);
+  --color-primario-suave: var(--primario-suave);
+  --color-exito: var(--exito);
+  --color-exito-suave: var(--exito-suave);
+  --color-alerta: var(--alerta);
+  --color-alerta-suave: var(--alerta-suave);
+  --color-error: var(--error);
+  --color-error-suave: var(--error-suave);
+  --color-info: var(--info);
+  --color-info-suave: var(--info-suave);
+  --radius-comp: var(--radio);
+  --radius-comp-sm: var(--radio-sm);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+* {
+  border-color: var(--linea);
+}
+
+body {
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scroll horizontal contenido dentro de contenedores, nunca el body */
+.tabla-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
