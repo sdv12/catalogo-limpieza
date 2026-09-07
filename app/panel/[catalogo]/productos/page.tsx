@@ -14,6 +14,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { ProductsFilters } from "@/components/products/ProductsFilters";
 import { ProductsTable } from "@/components/products/ProductsTable";
 import { ReprecioContextual } from "@/components/products/ReprecioContextual";
+import { BotonImprimir } from "@/components/products/BotonImprimir";
 
 export const metadata = { title: "Productos — Catálogo" };
 
@@ -104,14 +105,17 @@ export default async function ProductosPage({
             {verBorrados ? " (incluye dados de baja)" : ""}
           </p>
         </div>
-        {!soloLectura && (
-          <Link href={`/panel/${slug}/productos/nuevo`}>
-            <Button>
-              <Plus size={16} />
-              Nuevo producto
-            </Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <BotonImprimir slug={slug} />
+          {!soloLectura && (
+            <Link href={`/panel/${slug}/productos/nuevo`}>
+              <Button>
+                <Plus size={16} />
+                Nuevo producto
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       <ProductsFilters
