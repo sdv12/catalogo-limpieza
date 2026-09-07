@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 import { CatalogSidebar } from "@/components/layout/CatalogSidebar";
 import { LogoutButton } from "@/components/layout/LogoutButton";
+import { CommandPalette } from "@/components/layout/CommandPalette";
 import { Badge } from "@/components/ui/Badge";
 import { ETIQUETA_ROL, type RolEfectivo } from "@/lib/roles";
 
@@ -47,6 +48,7 @@ export function CatalogShell({
           {rol === "empleado" && <Badge tono="info">Empleado</Badge>}
 
           <div className="ml-auto flex items-center gap-3">
+            <CommandPalette slug={slug} rol={rol} />
             <span className="hidden text-right text-sm text-texto-sec sm:block">
               {usuario}
               <span className="block text-xs text-texto-tenue">

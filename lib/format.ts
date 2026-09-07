@@ -49,6 +49,18 @@ export function tiempoRelativo(fecha: string | Date): string {
   return rtf.format(Math.round(diffSeg / 31536000), "year");
 }
 
+/**
+ * Limpia un término de búsqueda antes de interpolarlo en un filtro PostgREST
+ * (`.or()` / `.ilike()`): saca comas, paréntesis y comodines que podrían
+ * inyectar filtros extra.
+ */
+export function sanitizarBusqueda(s: string): string {
+  return String(s ?? "")
+    .replace(/[,()\\%*]/g, " ")
+    .trim()
+    .slice(0, 60);
+}
+
 /** Genera un slug a partir de un texto (categorías, etc.). */
 export function generarSlug(texto: string): string {
   return texto

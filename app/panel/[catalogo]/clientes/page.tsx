@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { resolverCatalogo, puedeEditar } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizarBusqueda } from "@/lib/format";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
@@ -41,7 +42,7 @@ export default async function ClientesPage({
   if (sp.estado === "activo") query = query.eq("is_active", true);
   if (sp.estado === "inactivo") query = query.eq("is_active", false);
   if (sp.q?.trim()) {
-    const t = sp.q.trim();
+    const t = sanitizarBusqueda(sp.q);
     query = query.or(`name.ilike.%${t}%,doc_number.ilike.%${t}%,email.ilike.%${t}%`);
   }
 

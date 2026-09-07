@@ -13,6 +13,7 @@ import {
 import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { CAMBIOS_RECIENTES_DASHBOARD } from "@/lib/constants";
+import { formatearMoneda, formatearNumero } from "@/lib/format";
 import { Card, CardBody } from "@/components/ui/Card";
 import { RecentActivity } from "@/components/audit/RecentActivity";
 
@@ -22,7 +23,12 @@ type Stats = {
   productos_inactivos?: number;
   variantes_total?: number;
   stock_bajo?: number;
+  sin_stock?: number;
   categorias?: number;
+  clientes?: number;
+  proveedores?: number;
+  inventario_costo?: number;
+  unidades_stock?: number;
 };
 
 export default async function CatalogoDashboardPage({
@@ -34,12 +40,7 @@ export default async function CatalogoDashboardPage({
   const catalogo = await resolverCatalogo(slug);
   const supabase = await createClient();
 
-  const [
-    { data: statsRaw },
-    { data: cambios },
-    { count: clientes },
-    { count: proveedores },
-  ] = await Promise.all([
+  const [{ data: statsRaw }, { data: cambios }] = await Promise.all([
     supabase.rpc("catalog_stats", { p_catalog_id: catalogo.id }),
     supabase
       .from("audit_log")
@@ -47,19 +48,11 @@ export default async function CatalogoDashboardPage({
       .eq("catalog_id", catalogo.id)
       .order("created_at", { ascending: false })
       .limit(CAMBIOS_RECIENTES_DASHBOARD),
-    supabase
-      .from("customers")
-      .select("id", { count: "exact", head: true })
-      .eq("catalog_id", catalogo.id)
-      .eq("is_deleted", false),
-    supabase
-      .from("suppliers")
-      .select("id", { count: "exact", head: true })
-      .eq("catalog_id", catalogo.id)
-      .eq("is_deleted", false),
   ]);
 
   const stats = (statsRaw ?? {}) as Stats;
+  const clientes = stats.clientes ?? 0;
+  const proveedores = stats.proveedores ?? 0;
 
   const productIds = [
     ...new Set(
@@ -76,6 +69,7 @@ export default async function CatalogoDashboardPage({
   }
 
   const stockBajo = stats.stock_bajo ?? 0;
+  const invCosto = Number(stats.inventario_costo ?? 0);
 
   const tarjetas = [
     {
@@ -167,6 +161,39 @@ export default async function CatalogoDashboardPage({
           </Link>
         ))}
       </div>
+
+      {(invCosto > 0 || (stats.unidades_stock ?? 0) > 0) && (
+        <Card>
+          <CardBody className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+            <div>
+              <span className="text-xs uppercase tracking-wide text-texto-sec">
+                Valor de inventario (a costo)
+              </span>
+              <p className="text-lg font-semibold tabular-nums text-texto">
+                {invCosto > 0 ? formatearMoneda(invCosto) : "—"}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs uppercase tracking-wide text-texto-sec">
+                Unidades en stock
+              </span>
+              <p className="text-lg font-semibold tabular-nums text-texto">
+                {formatearNumero(stats.unidades_stock ?? 0)}
+              </p>
+            </div>
+            {(stats.sin_stock ?? 0) > 0 && (
+              <div>
+                <span className="text-xs uppercase tracking-wide text-texto-sec">
+                  Productos sin stock
+                </span>
+                <p className="text-lg font-semibold tabular-nums text-alerta">
+                  {stats.sin_stock}
+                </p>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      )}
 
       {accesos.length > 0 && (
         <div className="flex flex-wrap gap-2">
