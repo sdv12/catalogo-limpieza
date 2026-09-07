@@ -1,4 +1,5 @@
-import { resolverCatalogo, puedeEditar } from "@/lib/dal";
+import { notFound } from "next/navigation";
+import { resolverCatalogo, esAdminCatalogo } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { opcionesCategoria } from "@/lib/catalog-data";
 import { TiersManager } from "@/components/prices/TiersManager";
@@ -13,6 +14,7 @@ export default async function PreciosPage({
 }) {
   const { catalogo: slug } = await params;
   const catalogo = await resolverCatalogo(slug);
+  if (!esAdminCatalogo(catalogo)) notFound();
   const supabase = await createClient();
 
   const [{ data: tiers }, categorias] = await Promise.all([
@@ -24,7 +26,7 @@ export default async function PreciosPage({
     opcionesCategoria(supabase, catalogo.id),
   ]);
 
-  const soloLectura = !puedeEditar(catalogo);
+  const soloLectura = false;
 
   return (
     <div className="space-y-5">

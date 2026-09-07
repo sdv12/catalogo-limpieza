@@ -102,15 +102,19 @@ export function ProductForm({
   categorias,
   tiers,
   producto,
+  puedeEditarPrecios = true,
 }: {
   slug: string;
   catalogId: string;
   categorias: CategoriaOpt[];
   tiers: Tier[];
   producto?: ProductoExistente;
+  puedeEditarPrecios?: boolean;
 }) {
   const router = useRouter();
   const edicion = !!producto;
+  /** Al editar un producto existente, solo el admin puede tocar los precios. */
+  const preciosBloqueados = edicion && !puedeEditarPrecios;
 
   const [name, setName] = useState(producto?.name ?? "");
   const [description, setDescription] = useState(producto?.description ?? "");
@@ -557,11 +561,18 @@ export function ProductForm({
 
               <div className="mt-3">
                 <Label>Precios por nivel</Label>
-                <FieldHint>
-                  Cargá el <strong>costo</strong> y un <strong>%</strong> de
-                  ganancia y el precio se calcula solo. También podés escribir el
-                  precio a mano.
-                </FieldHint>
+                {preciosBloqueados ? (
+                  <FieldHint>
+                    Los precios los administra un administrador del catálogo. Vos
+                    podés ver y ajustar todo lo demás.
+                  </FieldHint>
+                ) : (
+                  <FieldHint>
+                    Cargá el <strong>costo</strong> y un <strong>%</strong> de
+                    ganancia y el precio se calcula solo. También podés escribir
+                    el precio a mano.
+                  </FieldHint>
+                )}
                 <div className="mt-1 grid gap-2 sm:grid-cols-3">
                   {tiers.map((t) => (
                     <div key={t.id}>
@@ -576,6 +587,7 @@ export function ProductForm({
                           onChange={(e) => setPrecio(v.key, t.id, e.target.value)}
                           placeholder="0,00"
                           className="flex-1"
+                          disabled={preciosBloqueados}
                           aria-label={`Precio ${t.name}`}
                         />
                         <div className="relative w-16 shrink-0">
@@ -587,7 +599,7 @@ export function ProductForm({
                               setMargen(v.key, t.id, e.target.value)
                             }
                             placeholder="%"
-                            disabled={!parsearNumero(v.cost)}
+                            disabled={preciosBloqueados || !parsearNumero(v.cost)}
                             title={
                               parsearNumero(v.cost)
                                 ? "% de ganancia sobre el costo"

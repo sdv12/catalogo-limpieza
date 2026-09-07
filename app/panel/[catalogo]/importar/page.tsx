@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { resolverCatalogo, puedeEditar } from "@/lib/dal";
+import { resolverCatalogo, esAdminCatalogo } from "@/lib/dal";
 import { ImportWizard } from "@/components/import/ImportWizard";
 
 export const metadata = { title: "Carga masiva — Catálogo" };
@@ -11,7 +11,7 @@ export default async function ImportarPage({
 }) {
   const { catalogo: slug } = await params;
   const catalogo = await resolverCatalogo(slug);
-  if (!puedeEditar(catalogo)) notFound();
+  if (!esAdminCatalogo(catalogo)) notFound();
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">

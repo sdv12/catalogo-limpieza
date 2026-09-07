@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { exigirEdicion, type ResultadoAccion } from "@/lib/guards";
+import { exigirAdmin, type ResultadoAccion } from "@/lib/guards";
 import { generarSlug } from "@/lib/format";
 
 const rev = (slug: string) => {
@@ -19,7 +19,7 @@ export async function crearTier(
   slug: string,
   name: string,
 ): Promise<ResultadoAccion> {
-  const catalogo = await exigirEdicion(slug);
+  const catalogo = await exigirAdmin(slug);
   const parsed = tierSchema.safeParse({ name });
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
 
@@ -55,7 +55,7 @@ export async function renombrarTier(
   id: string,
   name: string,
 ): Promise<ResultadoAccion> {
-  await exigirEdicion(slug);
+  await exigirAdmin(slug);
   const parsed = tierSchema.safeParse({ name });
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   const supabase = await createClient();
@@ -73,7 +73,7 @@ export async function toggleTier(
   id: string,
   isActive: boolean,
 ): Promise<ResultadoAccion> {
-  await exigirEdicion(slug);
+  await exigirAdmin(slug);
   const supabase = await createClient();
   const { error } = await supabase
     .from("price_tiers")
@@ -88,7 +88,7 @@ export async function fijarTierDefault(
   slug: string,
   id: string,
 ): Promise<ResultadoAccion> {
-  const catalogo = await exigirEdicion(slug);
+  const catalogo = await exigirAdmin(slug);
   const supabase = await createClient();
   await supabase
     .from("price_tiers")
@@ -108,7 +108,7 @@ export async function eliminarTier(
   slug: string,
   id: string,
 ): Promise<ResultadoAccion> {
-  await exigirEdicion(slug);
+  await exigirAdmin(slug);
   const supabase = await createClient();
   const { error } = await supabase.from("price_tiers").delete().eq("id", id);
   if (error)
@@ -139,7 +139,7 @@ export async function previsualizarPrecios(
   slug: string,
   input: LoteInput,
 ): Promise<ResultadoAccion & { data?: { count: number } }> {
-  const catalogo = await exigirEdicion(slug);
+  const catalogo = await exigirAdmin(slug);
   const parsed = loteSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
 
@@ -161,7 +161,7 @@ export async function aplicarPrecios(
   slug: string,
   input: LoteInput,
 ): Promise<ResultadoAccion & { data?: { count: number } }> {
-  const catalogo = await exigirEdicion(slug);
+  const catalogo = await exigirAdmin(slug);
   const parsed = loteSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   if (parsed.data.mode !== "set" && parsed.data.value === 0)

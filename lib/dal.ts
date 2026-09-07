@@ -3,24 +3,26 @@ import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+export type {
+  RolCatalogo,
+  RolEfectivo,
+  CatalogoAccesible,
+} from "@/lib/roles";
+export {
+  ETIQUETA_ROL,
+  puedeEditar,
+  esAdminCatalogo,
+  puedeEditarPrecios,
+} from "@/lib/roles";
+
+import type { RolCatalogo, CatalogoAccesible } from "@/lib/roles";
+
 export type Perfil = {
   id: string;
   email: string | null;
   full_name: string | null;
   is_superadmin: boolean;
   is_active: boolean;
-};
-
-export type RolCatalogo = "editor" | "viewer";
-
-export type CatalogoAccesible = {
-  id: string;
-  slug: string;
-  name: string;
-  logo_path: string | null;
-  is_active: boolean;
-  /** Rol del usuario en este catálogo ("superadmin" si lo es globalmente). */
-  rol: RolCatalogo | "superadmin";
 };
 
 /**
@@ -123,7 +125,3 @@ export const resolverCatalogo = cache(
   },
 );
 
-/** True si el usuario puede editar (no solo ver) el catálogo dado. */
-export function puedeEditar(catalogo: CatalogoAccesible): boolean {
-  return catalogo.rol === "superadmin" || catalogo.rol === "editor";
-}

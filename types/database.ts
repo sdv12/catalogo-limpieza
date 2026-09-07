@@ -224,6 +224,99 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          attributes: Json
+          catalog_id: string
+          city: string | null
+          created_at: string
+          created_by: string | null
+          credit_limit: number
+          deleted_at: string | null
+          deleted_by: string | null
+          doc_number: string | null
+          doc_type: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          is_deleted: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          price_tier_id: string | null
+          province: string | null
+          tax_condition: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          attributes?: Json
+          catalog_id: string
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_limit?: number
+          deleted_at?: string | null
+          deleted_by?: string | null
+          doc_number?: string | null
+          doc_type?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          price_tier_id?: string | null
+          province?: string | null
+          tax_condition?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          attributes?: Json
+          catalog_id?: string
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_limit?: number
+          deleted_at?: string | null
+          deleted_by?: string | null
+          doc_number?: string | null
+          doc_type?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          price_tier_id?: string | null
+          province?: string | null
+          tax_condition?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_price_tier_id_catalog_id_fkey"
+            columns: ["price_tier_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "price_tiers"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
       import_batches: {
         Row: {
           actor_id: string
@@ -441,6 +534,74 @@ export type Database = {
             columns: ["variant_id", "catalog_id"]
             isOneToOne: false
             referencedRelation: "product_variants"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
+      product_suppliers: {
+        Row: {
+          catalog_id: string
+          cost: number | null
+          created_at: string
+          is_primary: boolean
+          lead_time_days: number | null
+          notes: string | null
+          product_id: string
+          supplier_id: string
+          supplier_sku: string | null
+          updated_at: string
+        }
+        Insert: {
+          catalog_id: string
+          cost?: number | null
+          created_at?: string
+          is_primary?: boolean
+          lead_time_days?: number | null
+          notes?: string | null
+          product_id: string
+          supplier_id: string
+          supplier_sku?: string | null
+          updated_at?: string
+        }
+        Update: {
+          catalog_id?: string
+          cost?: number | null
+          created_at?: string
+          is_primary?: boolean
+          lead_time_days?: number | null
+          notes?: string | null
+          product_id?: string
+          supplier_id?: string
+          supplier_sku?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_suppliers_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_suppliers_product_id_catalog_id_fkey"
+            columns: ["product_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_view"
+            referencedColumns: ["product_id", "catalog_id"]
+          },
+          {
+            foreignKeyName: "product_suppliers_product_id_catalog_id_fkey"
+            columns: ["product_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "catalog_id"]
+          },
+          {
+            foreignKeyName: "product_suppliers_supplier_id_catalog_id_fkey"
+            columns: ["supplier_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id", "catalog_id"]
           },
         ]
@@ -699,6 +860,89 @@ export type Database = {
           },
         ]
       }
+      suppliers: {
+        Row: {
+          address: string | null
+          attributes: Json
+          catalog_id: string
+          city: string | null
+          contact_name: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          doc_number: string | null
+          doc_type: string | null
+          email: string | null
+          id: string
+          is_active: boolean
+          is_deleted: boolean
+          name: string
+          notes: string | null
+          payment_terms: string | null
+          phone: string | null
+          province: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          attributes?: Json
+          catalog_id: string
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          doc_number?: string | null
+          doc_type?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          name: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          province?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          attributes?: Json
+          catalog_id?: string
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          doc_number?: string | null
+          doc_type?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_deleted?: boolean
+          name?: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          province?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       variant_prices: {
         Row: {
           catalog_id: string
@@ -850,6 +1094,7 @@ export type Database = {
         Returns: number
       }
       can_edit_catalog: { Args: { cat: string }; Returns: boolean }
+      can_manage_prices: { Args: { cat: string }; Returns: boolean }
       catalog_actors: {
         Args: { p_catalog_id: string }
         Returns: {
@@ -860,6 +1105,7 @@ export type Database = {
       catalog_stats: { Args: { p_catalog_id: string }; Returns: Json }
       category_path: { Args: { p_category_id: string }; Returns: string }
       duplicate_product: { Args: { p_product_id: string }; Returns: string }
+      is_catalog_admin: { Args: { cat: string }; Returns: boolean }
       is_catalog_member: { Args: { cat: string }; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
       run_import: {
@@ -943,12 +1189,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -972,11 +1218,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -997,11 +1243,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1022,11 +1268,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1039,11 +1285,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

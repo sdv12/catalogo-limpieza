@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { exigirEdicion, type ResultadoAccion } from "@/lib/guards";
+import { esAdminCatalogo } from "@/lib/dal";
 import { BUCKET_IMAGENES, type MotivoStock } from "@/lib/constants";
 import {
   productoSchema,
@@ -169,6 +170,7 @@ export async function actualizarProducto(
   input: ProductoInput,
 ): Promise<ResultadoAccion> {
   const catalogo = await exigirEdicion(slug);
+  const puedeGestionarPrecios = esAdminCatalogo(catalogo);
   const parsed = productoSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0].message };
@@ -314,7 +316,8 @@ export async function actualizarProducto(
       variantId = creada.id;
     }
 
-    // precios de la variante: reconciliar
+    // precios de la variante: reconciliar (solo si el usuario puede tocar precios)
+    if (!puedeGestionarPrecios) continue;
     const deseados = preciosValidos(v.prices);
     const deseadosMap = new Map(deseados.map((p) => [p.tierId, p.price]));
     const { data: preciosActuales } = await supabase

@@ -74,7 +74,56 @@ export const ETIQUETA_ENTIDAD: Record<string, string> = {
   image: "Imagen",
   catalog: "Catálogo",
   member: "Usuario",
+  customer: "Cliente",
+  supplier: "Proveedor",
 };
+
+export const TIPOS_DOC = ["DNI", "CUIT", "CUIL", "CDI", "Pasaporte", "Otro"] as const;
+export type TipoDoc = (typeof TIPOS_DOC)[number];
+
+export const CONDICIONES_IVA = [
+  "responsable_inscripto",
+  "monotributo",
+  "consumidor_final",
+  "exento",
+  "no_categorizado",
+] as const;
+export type CondicionIVA = (typeof CONDICIONES_IVA)[number];
+
+export const ETIQUETA_CONDICION_IVA: Record<CondicionIVA, string> = {
+  responsable_inscripto: "Responsable inscripto",
+  monotributo: "Monotributo",
+  consumidor_final: "Consumidor final",
+  exento: "Exento",
+  no_categorizado: "No categorizado",
+};
+
+export const PROVINCIAS_AR = [
+  "Buenos Aires",
+  "CABA",
+  "Catamarca",
+  "Chaco",
+  "Chubut",
+  "Córdoba",
+  "Corrientes",
+  "Entre Ríos",
+  "Formosa",
+  "Jujuy",
+  "La Pampa",
+  "La Rioja",
+  "Mendoza",
+  "Misiones",
+  "Neuquén",
+  "Río Negro",
+  "Salta",
+  "San Juan",
+  "San Luis",
+  "Santa Cruz",
+  "Santa Fe",
+  "Santiago del Estero",
+  "Tierra del Fuego",
+  "Tucumán",
+] as const;
 
 export const MONEDA_DEFAULT = "ARS";
 

@@ -5,19 +5,20 @@ import { Menu } from "lucide-react";
 import { CatalogSidebar } from "@/components/layout/CatalogSidebar";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { Badge } from "@/components/ui/Badge";
+import { ETIQUETA_ROL, type RolEfectivo } from "@/lib/roles";
 
 export function CatalogShell({
   children,
   slug,
   nombreCatalogo,
   usuario,
-  soloLectura,
+  rol,
 }: {
   children: React.ReactNode;
   slug: string;
   nombreCatalogo: string;
   usuario: string;
-  soloLectura: boolean;
+  rol: RolEfectivo;
 }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -26,6 +27,7 @@ export function CatalogShell({
       <CatalogSidebar
         slug={slug}
         nombre={nombreCatalogo}
+        rol={rol}
         abierto={menuAbierto}
         onCerrar={() => setMenuAbierto(false)}
       />
@@ -41,11 +43,15 @@ export function CatalogShell({
             <Menu size={20} />
           </button>
 
-          {soloLectura && <Badge tono="alerta">Solo lectura</Badge>}
+          {rol === "viewer" && <Badge tono="alerta">Solo lectura</Badge>}
+          {rol === "empleado" && <Badge tono="info">Empleado</Badge>}
 
           <div className="ml-auto flex items-center gap-3">
-            <span className="hidden text-sm text-texto-sec sm:inline">
+            <span className="hidden text-right text-sm text-texto-sec sm:block">
               {usuario}
+              <span className="block text-xs text-texto-tenue">
+                {ETIQUETA_ROL[rol]}
+              </span>
             </span>
             <LogoutButton />
           </div>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { exigirEdicion, type ResultadoAccion } from "@/lib/guards";
+import { exigirAdmin, type ResultadoAccion } from "@/lib/guards";
 import type { FilaImport } from "@/lib/import/parse";
 
 export type ReporteImport = {
@@ -23,7 +23,7 @@ export async function previsualizarImport(
   slug: string,
   filas: FilaImport[],
 ): Promise<ResultadoAccion & { data?: ReporteImport }> {
-  const catalogo = await exigirEdicion(slug);
+  const catalogo = await exigirAdmin(slug);
   if (filas.length === 0) return { ok: false, message: "El archivo no tiene filas." };
   if (filas.length > 2000)
     return { ok: false, message: "Máximo 2000 filas por importación." };
@@ -43,7 +43,7 @@ export async function ejecutarImport(
   filas: FilaImport[],
   filename: string,
 ): Promise<ResultadoAccion & { data?: ReporteImport }> {
-  const catalogo = await exigirEdicion(slug);
+  const catalogo = await exigirAdmin(slug);
   if (filas.length === 0) return { ok: false, message: "No hay filas válidas para importar." };
 
   const supabase = await createClient();

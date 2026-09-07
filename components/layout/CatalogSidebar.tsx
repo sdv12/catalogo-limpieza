@@ -9,19 +9,34 @@ import {
   Tags,
   Upload,
   History,
+  Users,
+  Truck,
   ChevronLeft,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import type { RolEfectivo } from "@/lib/roles";
 
-function items(slug: string) {
+type Item = {
+  href: string;
+  label: string;
+  icon: typeof Package;
+  exact?: boolean;
+  /** roles que ven este item; si falta, lo ven todos */
+  roles?: RolEfectivo[];
+};
+
+function items(slug: string): Item[] {
   const b = `/panel/${slug}`;
+  const soloAdmin: RolEfectivo[] = ["superadmin", "admin"];
   return [
     { href: b, label: "Inicio", icon: LayoutDashboard, exact: true },
     { href: `${b}/productos`, label: "Productos", icon: Package },
     { href: `${b}/categorias`, label: "Categorías", icon: FolderTree },
-    { href: `${b}/precios`, label: "Precios", icon: Tags },
-    { href: `${b}/importar`, label: "Carga masiva", icon: Upload },
+    { href: `${b}/clientes`, label: "Clientes", icon: Users },
+    { href: `${b}/proveedores`, label: "Proveedores", icon: Truck },
+    { href: `${b}/precios`, label: "Precios", icon: Tags, roles: soloAdmin },
+    { href: `${b}/importar`, label: "Carga masiva", icon: Upload, roles: soloAdmin },
     { href: `${b}/actividad`, label: "Actividad", icon: History },
   ];
 }
@@ -29,15 +44,18 @@ function items(slug: string) {
 export function CatalogSidebar({
   slug,
   nombre,
+  rol,
   abierto,
   onCerrar,
 }: {
   slug: string;
   nombre: string;
+  rol: RolEfectivo;
   abierto: boolean;
   onCerrar: () => void;
 }) {
   const pathname = usePathname();
+  const visibles = items(slug).filter((i) => !i.roles || i.roles.includes(rol));
 
   return (
     <>
@@ -68,8 +86,8 @@ export function CatalogSidebar({
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 p-2">
-          {items(slug).map(({ href, label, icon: Icon, exact }) => {
+        <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+          {visibles.map(({ href, label, icon: Icon, exact }) => {
             const activo = exact
               ? pathname === href
               : pathname === href || pathname.startsWith(`${href}/`);

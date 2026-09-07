@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { exigirSuperadmin } from "@/lib/dal";
+import { exigirSuperadmin, type RolCatalogo } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { CatalogosAdmin } from "@/components/catalogs/CatalogosAdmin";
@@ -9,7 +9,7 @@ export const metadata = { title: "Catálogos y usuarios — Admin" };
 
 export type MiembroVista = {
   user_id: string;
-  role: "editor" | "viewer";
+  role: RolCatalogo;
   email: string | null;
   full_name: string | null;
   is_superadmin: boolean;
@@ -40,7 +40,7 @@ export default async function AdminCatalogosPage() {
     const p = perfilPorId.get(m.user_id);
     (miembrosPorCatalogo[m.catalog_id] ??= []).push({
       user_id: m.user_id,
-      role: m.role as "editor" | "viewer",
+      role: m.role as RolCatalogo,
       email: p?.email ?? null,
       full_name: p?.full_name ?? null,
       is_superadmin: p?.is_superadmin ?? false,

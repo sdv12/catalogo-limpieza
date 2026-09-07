@@ -203,14 +203,15 @@ function CatalogoRow({
                       const r = await cambiarRolMiembro(
                         catalogo.id,
                         m.user_id,
-                        e.target.value as "editor" | "viewer",
+                        e.target.value as "admin" | "empleado" | "viewer",
                       );
                       notificar(r);
                       if (r.ok) onCambio();
                     }}
-                    className="h-8 w-32 shrink-0"
+                    className="h-8 w-36 shrink-0"
                   >
-                    <option value="editor">Edición</option>
+                    <option value="admin">Administrador</option>
+                    <option value="empleado">Empleado</option>
                     <option value="viewer">Solo lectura</option>
                   </Select>
                   <button
@@ -258,10 +259,11 @@ function CatalogoRow({
                   <Select
                     id={`r-${catalogo.id}`}
                     name="role"
-                    defaultValue="editor"
-                    className="w-full sm:w-32"
+                    defaultValue="empleado"
+                    className="w-full sm:w-36"
                   >
-                    <option value="editor">Edición</option>
+                    <option value="admin">Administrador</option>
+                    <option value="empleado">Empleado</option>
                     <option value="viewer">Solo lectura</option>
                   </Select>
                 </div>

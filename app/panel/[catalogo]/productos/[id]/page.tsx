@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, History } from "lucide-react";
-import { resolverCatalogo, puedeEditar } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { opcionesCategoria, tiersDelCatalogo } from "@/lib/catalog-data";
 import { imagenUrl } from "@/lib/storage";
@@ -112,6 +112,7 @@ export default async function EditarProductoPage({
           categorias={categorias}
           tiers={tiers}
           producto={existente}
+          puedeEditarPrecios={esAdminCatalogo(catalogo)}
         />
       )}
     </div>

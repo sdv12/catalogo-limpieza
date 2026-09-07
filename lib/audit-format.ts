@@ -81,7 +81,24 @@ export function formatearValorAuditoria(
   if (field === "price_tier_id")
     return maps?.tiers?.get(String(v)) ?? "otro nivel";
   if (field === "variant_id") return "otra presentación";
-  if (field === "role") return v === "editor" ? "Edición" : "Solo lectura";
+  if (field === "role") {
+    return (
+      { admin: "Administrador", empleado: "Empleado", viewer: "Solo lectura" }[
+        String(v)
+      ] ?? String(v)
+    );
+  }
+  if (field === "tax_condition") {
+    return (
+      {
+        responsable_inscripto: "Responsable inscripto",
+        monotributo: "Monotributo",
+        consumidor_final: "Consumidor final",
+        exento: "Exento",
+        no_categorizado: "No categorizado",
+      }[String(v)] ?? String(v)
+    );
+  }
   if (typeof v === "object") return JSON.stringify(v);
   return String(v);
 }

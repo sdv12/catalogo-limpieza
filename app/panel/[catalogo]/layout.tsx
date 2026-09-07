@@ -1,4 +1,4 @@
-import { obtenerPerfil, resolverCatalogo, puedeEditar } from "@/lib/dal";
+import { obtenerPerfil, resolverCatalogo } from "@/lib/dal";
 import { CatalogShell } from "@/components/layout/CatalogShell";
 
 export default async function CatalogoLayout({
@@ -19,7 +19,7 @@ export default async function CatalogoLayout({
       slug={catalogo.slug}
       nombreCatalogo={catalogo.name}
       usuario={perfil.full_name || perfil.email || "Usuario"}
-      soloLectura={!puedeEditar(catalogo)}
+      rol={catalogo.rol}
     >
       {children}
     </CatalogShell>

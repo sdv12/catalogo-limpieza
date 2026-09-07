@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Settings, Store } from "lucide-react";
-import { obtenerPerfil, catalogosDelUsuario } from "@/lib/dal";
+import { obtenerPerfil, catalogosDelUsuario, ETIQUETA_ROL } from "@/lib/dal";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -54,11 +54,7 @@ export default async function SelectorCatalogoPage() {
                     </span>
                     <span className="mt-0.5 block">
                       <Badge tono={c.rol === "viewer" ? "alerta" : "neutro"}>
-                        {c.rol === "superadmin"
-                          ? "Administrador"
-                          : c.rol === "editor"
-                            ? "Edición"
-                            : "Solo lectura"}
+                        {ETIQUETA_ROL[c.rol]}
                       </Badge>
                     </span>
                   </span>

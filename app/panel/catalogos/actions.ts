@@ -82,7 +82,7 @@ export async function actualizarCatalogo(
 const miembroSchema = z.object({
   catalogId: z.string().uuid(),
   email: z.string().trim().toLowerCase().email("Email inválido"),
-  role: z.enum(["editor", "viewer"]),
+  role: z.enum(["admin", "empleado", "viewer"]),
   crearUsuario: z.boolean().default(false),
   fullName: z.string().trim().optional(),
 });
@@ -177,7 +177,7 @@ export async function agregarMiembro(
 export async function cambiarRolMiembro(
   catalogId: string,
   userId: string,
-  role: "editor" | "viewer",
+  role: "admin" | "empleado" | "viewer",
 ): Promise<Resultado> {
   await exigirSuperadmin();
   const supabase = await createClient();
