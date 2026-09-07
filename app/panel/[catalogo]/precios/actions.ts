@@ -123,66 +123,88 @@ export async function eliminarTier(
 }
 
 // ------------------------------------------------------------
-// Actualización de precios en lote
+// Reprecio en lote sobre el conjunto filtrado del listado de productos
 // ------------------------------------------------------------
-const loteSchema = z.object({
-  categoryId: z.string().uuid().nullable(),
+const filtroSchema = z.object({
+  q: z.string().trim().max(120).optional(),
+  categoria: z.string().uuid().optional(),
+  marca: z.string().trim().max(120).optional(),
+  proveedor: z.string().uuid().optional(),
+  estado: z.enum(["active", "inactive"]).optional(),
+  stock: z.enum(["low", "ok"]).optional(),
+});
+
+const reprecioSchema = z.object({
+  filtro: filtroSchema,
   tierIds: z.array(z.string().uuid()),
-  mode: z.enum(["percent", "amount", "set"]),
+  mode: z.enum(["percent", "amount", "set", "margin"]),
   value: z.number(),
   round: z.boolean(),
 });
 
-type LoteInput = z.infer<typeof loteSchema>;
+export type FiltroProductos = z.infer<typeof filtroSchema>;
+export type ReprecioInput = z.infer<typeof reprecioSchema>;
+export type ReprecioResultado = { productos: number; precios: number; sin_costo: number };
 
-export async function previsualizarPrecios(
+function argsRpc(catalogId: string, input: ReprecioInput, dryRun: boolean) {
+  const f = input.filtro;
+  return {
+    p_catalog_id: catalogId,
+    p_q: f.q || undefined,
+    p_category_id: f.categoria || undefined,
+    p_brand: f.marca || undefined,
+    p_supplier_id: f.proveedor || undefined,
+    p_status: f.estado || undefined,
+    p_stock: f.stock || undefined,
+    p_tier_ids: input.tierIds.length ? input.tierIds : undefined,
+    p_mode: input.mode,
+    p_value: input.value,
+    p_round: input.round,
+    p_dry_run: dryRun,
+  };
+}
+
+export async function previsualizarReprecio(
   slug: string,
-  input: LoteInput,
-): Promise<ResultadoAccion & { data?: { count: number } }> {
+  input: ReprecioInput,
+): Promise<ResultadoAccion & { data?: ReprecioResultado }> {
   const catalogo = await exigirAdmin(slug);
-  const parsed = loteSchema.safeParse(input);
+  const parsed = reprecioSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("apply_bulk_price_update", {
-    p_catalog_id: catalogo.id,
-    p_category_id: parsed.data.categoryId ?? undefined,
-    p_tier_ids: parsed.data.tierIds.length ? parsed.data.tierIds : undefined,
-    p_mode: parsed.data.mode,
-    p_value: parsed.data.value,
-    p_round: parsed.data.round,
-    p_dry_run: true,
-  });
+  const { data, error } = await supabase.rpc(
+    "reprecio_por_filtro",
+    argsRpc(catalogo.id, parsed.data, true),
+  );
   if (error) return { ok: false, message: error.message };
-  return { ok: true, message: "", data: { count: data ?? 0 } };
+  return { ok: true, message: "", data: data as unknown as ReprecioResultado };
 }
 
-export async function aplicarPrecios(
+export async function aplicarReprecio(
   slug: string,
-  input: LoteInput,
-): Promise<ResultadoAccion & { data?: { count: number } }> {
+  input: ReprecioInput,
+): Promise<ResultadoAccion & { data?: ReprecioResultado }> {
   const catalogo = await exigirAdmin(slug);
-  const parsed = loteSchema.safeParse(input);
+  const parsed = reprecioSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
   if (parsed.data.mode !== "set" && parsed.data.value === 0)
     return { ok: false, message: "El valor no puede ser cero." };
+  if (parsed.data.mode === "margin" && parsed.data.value < 0)
+    return { ok: false, message: "El margen no puede ser negativo." };
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("apply_bulk_price_update", {
-    p_catalog_id: catalogo.id,
-    p_category_id: parsed.data.categoryId ?? undefined,
-    p_tier_ids: parsed.data.tierIds.length ? parsed.data.tierIds : undefined,
-    p_mode: parsed.data.mode,
-    p_value: parsed.data.value,
-    p_round: parsed.data.round,
-    p_dry_run: false,
-  });
+  const { data, error } = await supabase.rpc(
+    "reprecio_por_filtro",
+    argsRpc(catalogo.id, parsed.data, false),
+  );
   if (error) return { ok: false, message: error.message };
   rev(slug);
   revalidatePath(`/panel/${slug}/actividad`);
+  const r = data as unknown as ReprecioResultado;
   return {
     ok: true,
-    message: `${data ?? 0} precios actualizados`,
-    data: { count: data ?? 0 },
+    message: `${r.precios} ${r.precios === 1 ? "precio actualizado" : "precios actualizados"}`,
+    data: r,
   };
 }

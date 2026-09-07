@@ -47,6 +47,7 @@ export function ProductsTable({
             <Th className="w-12"></Th>
             <Th>{sortLink("name", "Producto")}</Th>
             <Th>Categoría</Th>
+            <Th className="text-right">Costo</Th>
             <Th className="text-right">Precio</Th>
             <Th className="text-right">Stock</Th>
             <Th>{sortLink("status", "Estado")}</Th>
@@ -82,10 +83,14 @@ export function ProductsTable({
                   {f.base_sku ? `${f.base_sku} · ` : ""}
                   {formatearNumero(Number(f.variant_count))}{" "}
                   {Number(f.variant_count) === 1 ? "presentación" : "presentaciones"}
+                  {f.supplier_name ? ` · ${f.supplier_name}` : ""}
                 </div>
               </Td>
               <Td className="whitespace-nowrap text-texto-sec">
                 {f.category_name ?? "—"}
+              </Td>
+              <Td className="whitespace-nowrap text-right text-texto-sec tabular-nums">
+                {f.min_cost == null ? "—" : formatearMoneda(Number(f.min_cost))}
               </Td>
               <Td className="whitespace-nowrap text-right">
                 {f.min_price == null

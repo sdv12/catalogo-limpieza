@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { resolverCatalogo, puedeEditar } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
+import {
+  tiersDelCatalogo,
+  marcasDelCatalogo,
+  proveedoresDelCatalogo,
+} from "@/lib/catalog-data";
 import { PRODUCTOS_POR_PAGINA } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { ProductsFilters } from "@/components/products/ProductsFilters";
 import { ProductsTable } from "@/components/products/ProductsTable";
+import { ReprecioContextual } from "@/components/products/ReprecioContextual";
 
 export const metadata = { title: "Productos — Catálogo" };
 
@@ -33,30 +39,50 @@ export default async function ProductosPage({
     : "updated_at";
   const dir = sp.dir === "asc" ? "asc" : "desc";
   const verBorrados = sp.borrados === "1";
+  const estado: "active" | "inactive" | undefined =
+    sp.estado === "active" || sp.estado === "inactive" ? sp.estado : undefined;
+  const stock: "low" | "ok" | undefined =
+    sp.stock === "low" || sp.stock === "ok" ? sp.stock : undefined;
+  const admin = esAdminCatalogo(catalogo);
 
-  const [{ data: filas, error }, { data: categorias }] = await Promise.all([
-    supabase.rpc("search_products", {
-      p_catalog_id: catalogo.id,
-      p_q: sp.q?.trim() || undefined,
-      p_category_id: sp.categoria || undefined,
-      p_status:
-        sp.estado === "active" || sp.estado === "inactive" ? sp.estado : undefined,
-      p_stock: sp.stock === "low" || sp.stock === "ok" ? sp.stock : undefined,
-      p_include_deleted: verBorrados,
-      p_sort: sort,
-      p_dir: dir,
-      p_limit: PRODUCTOS_POR_PAGINA,
-      p_offset: (pagina - 1) * PRODUCTOS_POR_PAGINA,
-    }),
-    supabase
-      .from("categories")
-      .select("id, name, parent_id")
-      .eq("catalog_id", catalogo.id)
-      .order("sort_order"),
-  ]);
+  const [{ data: filas, error }, { data: categorias }, marcas, proveedores, tiers] =
+    await Promise.all([
+      supabase.rpc("search_products", {
+        p_catalog_id: catalogo.id,
+        p_q: sp.q?.trim() || undefined,
+        p_category_id: sp.categoria || undefined,
+        p_brand: sp.marca || undefined,
+        p_supplier_id: sp.proveedor || undefined,
+        p_status: estado,
+        p_stock: stock,
+        p_include_deleted: verBorrados,
+        p_sort: sort,
+        p_dir: dir,
+        p_limit: PRODUCTOS_POR_PAGINA,
+        p_offset: (pagina - 1) * PRODUCTOS_POR_PAGINA,
+      }),
+      supabase
+        .from("categories")
+        .select("id, name, parent_id")
+        .eq("catalog_id", catalogo.id)
+        .order("sort_order"),
+      marcasDelCatalogo(supabase, catalogo.id),
+      proveedoresDelCatalogo(supabase, catalogo.id),
+      admin ? tiersDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
+    ]);
 
   const total = filas?.[0]?.total_count ?? 0;
   const soloLectura = !puedeEditar(catalogo);
+
+  const filtro = {
+    q: sp.q?.trim() || undefined,
+    categoria: sp.categoria || undefined,
+    marca: sp.marca || undefined,
+    proveedor: sp.proveedor || undefined,
+    estado,
+    stock,
+  };
+  const hayFiltro = Object.values(filtro).some(Boolean);
 
   const hacerHref = (cambios: SP) => {
     const q = new URLSearchParams();
@@ -90,14 +116,28 @@ export default async function ProductosPage({
 
       <ProductsFilters
         categorias={categorias ?? []}
+        marcas={marcas}
+        proveedores={proveedores}
         valores={{
           q: sp.q ?? "",
           categoria: sp.categoria ?? "",
+          marca: sp.marca ?? "",
+          proveedor: sp.proveedor ?? "",
           estado: sp.estado ?? "",
           stock: sp.stock ?? "",
           borrados: verBorrados,
         }}
       />
+
+      {admin && !verBorrados && total > 0 && (
+        <ReprecioContextual
+          slug={slug}
+          tiers={tiers}
+          filtro={filtro}
+          total={total}
+          hayFiltro={hayFiltro}
+        />
+      )}
 
       {error ? (
         <p className="text-sm text-error">No se pudo cargar el listado: {error.message}</p>

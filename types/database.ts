@@ -1081,18 +1081,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      apply_bulk_price_update: {
-        Args: {
-          p_catalog_id: string
-          p_category_id?: string
-          p_dry_run?: boolean
-          p_mode?: string
-          p_round?: boolean
-          p_tier_ids?: string[]
-          p_value?: number
-        }
-        Returns: number
-      }
       can_edit_catalog: { Args: { cat: string }; Returns: boolean }
       can_manage_prices: { Args: { cat: string }; Returns: boolean }
       catalog_actors: {
@@ -1108,6 +1096,23 @@ export type Database = {
       is_catalog_admin: { Args: { cat: string }; Returns: boolean }
       is_catalog_member: { Args: { cat: string }; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
+      reprecio_por_filtro: {
+        Args: {
+          p_brand?: string
+          p_catalog_id: string
+          p_category_id?: string
+          p_dry_run?: boolean
+          p_mode?: string
+          p_q?: string
+          p_round?: boolean
+          p_status?: string
+          p_stock?: string
+          p_supplier_id?: string
+          p_tier_ids?: string[]
+          p_value?: number
+        }
+        Returns: Json
+      }
       run_import: {
         Args: {
           p_catalog_id: string
@@ -1128,6 +1133,7 @@ export type Database = {
       }
       search_products: {
         Args: {
+          p_brand?: string
           p_catalog_id: string
           p_category_id?: string
           p_dir?: string
@@ -1138,6 +1144,7 @@ export type Database = {
           p_sort?: string
           p_status?: string
           p_stock?: string
+          p_supplier_id?: string
         }
         Returns: {
           base_sku: string
@@ -1147,10 +1154,12 @@ export type Database = {
           is_deleted: boolean
           low_stock: boolean
           max_price: number
+          min_cost: number
           min_price: number
           name: string
           primary_image: string
           status: string
+          supplier_name: string
           total_count: number
           total_stock: number
           updated_at: string

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { Input, Select } from "@/components/ui/Field";
@@ -18,6 +18,7 @@ export function PeopleFilters({
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
   const [q, setQ] = useState(valores.q);
+  const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const setParam = (cambios: Record<string, string>) => {
     const p = new URLSearchParams(searchParams.toString());
@@ -30,12 +31,18 @@ export function PeopleFilters({
   };
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      if (q !== valores.q) setParam({ q });
+    clearTimeout(debounce.current);
+    debounce.current = setTimeout(() => {
+      if (q.trim() !== valores.q) setParam({ q: q.trim() });
     }, 350);
-    return () => clearTimeout(t);
+    return () => clearTimeout(debounce.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
+
+  const buscarYa = () => {
+    clearTimeout(debounce.current);
+    if (q.trim() !== valores.q) setParam({ q: q.trim() });
+  };
 
   return (
     <div className="flex flex-wrap items-end gap-2">
@@ -47,6 +54,12 @@ export function PeopleFilters({
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              buscarYa();
+            }
+          }}
           placeholder={placeholder}
           className="pl-8"
           aria-label="Buscar"

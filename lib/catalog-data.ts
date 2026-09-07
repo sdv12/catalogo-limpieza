@@ -29,6 +29,33 @@ export async function opcionesCategoria(supabase: DB, catalogId: string) {
   return out;
 }
 
+/** Marcas cargadas en los productos del catálogo (distintas, ordenadas). */
+export async function marcasDelCatalogo(supabase: DB, catalogId: string) {
+  const { data } = await supabase
+    .from("products")
+    .select("brand")
+    .eq("catalog_id", catalogId)
+    .eq("is_deleted", false)
+    .not("brand", "is", null);
+  const set = new Set<string>();
+  for (const r of data ?? []) {
+    const b = (r.brand ?? "").trim();
+    if (b) set.add(b);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+/** Proveedores activos del catálogo como opciones. */
+export async function proveedoresDelCatalogo(supabase: DB, catalogId: string) {
+  const { data } = await supabase
+    .from("suppliers")
+    .select("id, name")
+    .eq("catalog_id", catalogId)
+    .eq("is_deleted", false)
+    .order("name");
+  return data ?? [];
+}
+
 /** Niveles de precio activos del catálogo, ordenados. */
 export async function tiersDelCatalogo(supabase: DB, catalogId: string) {
   const { data } = await supabase
