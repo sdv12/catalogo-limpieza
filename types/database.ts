@@ -796,6 +796,91 @@ export type Database = {
         }
         Relationships: []
       }
+      promotions: {
+        Row: {
+          attributes: Json
+          catalog_id: string
+          created_at: string
+          created_by: string | null
+          discount_type: string | null
+          discount_value: number | null
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          kind: string
+          link: string | null
+          position: number
+          product_id: string
+          starts_at: string | null
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          attributes?: Json
+          catalog_id: string
+          created_at?: string
+          created_by?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind: string
+          link?: string | null
+          position?: number
+          product_id: string
+          starts_at?: string | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          attributes?: Json
+          catalog_id?: string
+          created_at?: string
+          created_by?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: string
+          link?: string | null
+          position?: number
+          product_id?: string
+          starts_at?: string | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotions_product_id_catalog_id_fkey"
+            columns: ["product_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_view"
+            referencedColumns: ["product_id", "catalog_id"]
+          },
+          {
+            foreignKeyName: "promotions_product_id_catalog_id_fkey"
+            columns: ["product_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
       stock_movements: {
         Row: {
           batch_id: string | null
@@ -1200,6 +1285,7 @@ export type Database = {
         }
         Returns: Json
       }
+      storefront_promos: { Args: { p_catalog_slug: string }; Returns: Json }
       supplier_products: {
         Args: { p_catalog_id: string; p_supplier_id: string }
         Returns: {

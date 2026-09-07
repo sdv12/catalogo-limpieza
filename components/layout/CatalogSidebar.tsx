@@ -11,6 +11,7 @@ import {
   History,
   Users,
   Truck,
+  Megaphone,
   ChevronLeft,
   X,
 } from "lucide-react";
@@ -36,6 +37,7 @@ function items(slug: string): Item[] {
     { href: `${b}/clientes`, label: "Clientes", icon: Users },
     { href: `${b}/proveedores`, label: "Proveedores", icon: Truck },
     { href: `${b}/precios`, label: "Precios", icon: Tags, roles: soloAdmin },
+    { href: `${b}/promos`, label: "Promos", icon: Megaphone, roles: soloAdmin },
     { href: `${b}/importar`, label: "Carga masiva", icon: Upload, roles: soloAdmin },
     { href: `${b}/actividad`, label: "Actividad", icon: History },
   ];
