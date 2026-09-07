@@ -2,11 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { exigirEdicion, type ResultadoAccion } from "@/lib/guards";
+import {
+  exigirEdicion,
+  exigirAdmin,
+  type ResultadoAccion,
+} from "@/lib/guards";
+import { sanitizarBusqueda } from "@/lib/format";
 import { supplierSchema, type SupplierInput } from "@/lib/validation/supplier";
 
 function rev(slug: string, id?: string) {
   revalidatePath(`/panel/${slug}/proveedores`);
+  revalidatePath(`/panel/${slug}/productos`);
   if (id) revalidatePath(`/panel/${slug}/proveedores/${id}`);
 }
 
@@ -167,4 +173,126 @@ export async function desvincularProveedor(
   if (error) return { ok: false, message: error.message };
   revalidatePath(`/panel/${slug}/productos/${productId}`);
   return { ok: true, message: "Proveedor desvinculado" };
+}
+
+// ------------------------------------------------------------
+// Coordinación proveedor ↔ productos
+// ------------------------------------------------------------
+
+/** Busca productos del catálogo que todavía NO están vinculados al proveedor. */
+export async function buscarProductosProveedor(
+  slug: string,
+  supplierId: string,
+  q: string,
+): Promise<{ id: string; name: string; brand: string | null; base_sku: string | null }[]> {
+  const catalogo = await exigirEdicion(slug);
+  const t = sanitizarBusqueda(q);
+  if (t.length < 2) return [];
+  const supabase = await createClient();
+
+  const [{ data: prods }, { data: vinculados }] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, name, brand, base_sku")
+      .eq("catalog_id", catalogo.id)
+      .eq("is_deleted", false)
+      .or(`name.ilike.%${t}%,base_sku.ilike.%${t}%,brand.ilike.%${t}%`)
+      .order("name")
+      .limit(30),
+    supabase
+      .from("product_suppliers")
+      .select("product_id")
+      .eq("supplier_id", supplierId),
+  ]);
+
+  const ya = new Set((vinculados ?? []).map((v) => v.product_id));
+  return (prods ?? []).filter((p) => !ya.has(p.id)).slice(0, 12);
+}
+
+export async function agregarProductosAProveedor(
+  slug: string,
+  supplierId: string,
+  productIds: string[],
+  setPrimary: boolean,
+): Promise<ResultadoAccion> {
+  const catalogo = await exigirEdicion(slug);
+  if (productIds.length === 0)
+    return { ok: false, message: "Elegí al menos un producto." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("vincular_productos_proveedor", {
+    p_catalog_id: catalogo.id,
+    p_supplier_id: supplierId,
+    p_product_ids: productIds,
+    p_set_primary: setPrimary,
+  });
+  if (error) return { ok: false, message: error.message };
+  rev(slug, supplierId);
+  return {
+    ok: true,
+    message: `${data ?? 0} ${data === 1 ? "producto vinculado" : "productos vinculados"}`,
+  };
+}
+
+type CostoInput = {
+  mode: "percent" | "set";
+  value: number;
+  round: boolean;
+};
+
+export async function ajustarCostosProveedor(
+  slug: string,
+  supplierId: string,
+  input: CostoInput,
+  dryRun: boolean,
+): Promise<ResultadoAccion & { data?: { productos: number; con_costo: number } }> {
+  const catalogo = await exigirAdmin(slug);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("ajustar_costo_proveedor", {
+    p_catalog_id: catalogo.id,
+    p_supplier_id: supplierId,
+    p_mode: input.mode,
+    p_value: input.value,
+    p_round: input.round,
+    p_dry_run: dryRun,
+  });
+  if (error) return { ok: false, message: error.message };
+  if (!dryRun) {
+    rev(slug, supplierId);
+    revalidatePath(`/panel/${slug}/actividad`);
+  }
+  const r = data as unknown as { productos: number; con_costo: number };
+  return {
+    ok: true,
+    message: dryRun ? "" : `Costos actualizados (${r.con_costo})`,
+    data: r,
+  };
+}
+
+export async function propagarCostosProveedor(
+  slug: string,
+  supplierId: string,
+  soloSinCosto: boolean,
+  dryRun: boolean,
+): Promise<ResultadoAccion & { data?: { presentaciones: number; productos: number } }> {
+  const catalogo = await exigirAdmin(slug);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("propagar_costo_proveedor", {
+    p_catalog_id: catalogo.id,
+    p_supplier_id: supplierId,
+    p_solo_sin_costo: soloSinCosto,
+    p_dry_run: dryRun,
+  });
+  if (error) return { ok: false, message: error.message };
+  if (!dryRun) {
+    rev(slug, supplierId);
+    revalidatePath(`/panel/${slug}/actividad`);
+  }
+  const r = data as unknown as { presentaciones: number; productos: number };
+  return {
+    ok: true,
+    message: dryRun
+      ? ""
+      : `${r.presentaciones} ${r.presentaciones === 1 ? "presentación actualizada" : "presentaciones actualizadas"}`,
+    data: r,
+  };
 }

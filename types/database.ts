@@ -1081,6 +1081,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      ajustar_costo_proveedor: {
+        Args: {
+          p_catalog_id: string
+          p_dry_run?: boolean
+          p_mode?: string
+          p_round?: boolean
+          p_supplier_id: string
+          p_value?: number
+        }
+        Returns: Json
+      }
       can_edit_catalog: { Args: { cat: string }; Returns: boolean }
       can_manage_prices: { Args: { cat: string }; Returns: boolean }
       catalog_actors: {
@@ -1096,6 +1107,15 @@ export type Database = {
       is_catalog_admin: { Args: { cat: string }; Returns: boolean }
       is_catalog_member: { Args: { cat: string }; Returns: boolean }
       is_superadmin: { Args: never; Returns: boolean }
+      propagar_costo_proveedor: {
+        Args: {
+          p_catalog_id: string
+          p_dry_run?: boolean
+          p_solo_sin_costo?: boolean
+          p_supplier_id: string
+        }
+        Returns: Json
+      }
       reprecio_por_filtro: {
         Args: {
           p_brand?: string
@@ -1179,6 +1199,32 @@ export type Database = {
           p_sku?: string
         }
         Returns: Json
+      }
+      supplier_products: {
+        Args: { p_catalog_id: string; p_supplier_id: string }
+        Returns: {
+          base_sku: string
+          brand: string
+          cost: number
+          is_deleted: boolean
+          is_primary: boolean
+          min_price: number
+          min_variant_cost: number
+          name: string
+          product_id: string
+          status: string
+          supplier_sku: string
+          variant_count: number
+        }[]
+      }
+      vincular_productos_proveedor: {
+        Args: {
+          p_catalog_id: string
+          p_product_ids: string[]
+          p_set_primary?: boolean
+          p_supplier_id: string
+        }
+        Returns: number
       }
     }
     Enums: {
