@@ -24,7 +24,7 @@ export default async function NuevoProductoPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
+    <div className="mx-auto max-w-4xl space-y-5 pb-24">
       <Link
         href={`/panel/${slug}/productos`}
         className="inline-flex items-center gap-1 text-sm text-texto-sec hover:text-texto"

@@ -287,7 +287,7 @@ export function ProductForm({
   }
 
   return (
-    <div className="space-y-5 pb-24">
+    <div className="space-y-5">
       {errores.length > 0 && (
         <div className="rounded-comp border border-error bg-error-suave px-4 py-3 text-sm text-error">
           <ul className="list-inside list-disc space-y-0.5">

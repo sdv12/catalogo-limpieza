@@ -7,6 +7,7 @@ import { opcionesCategoria, tiersDelCatalogo } from "@/lib/catalog-data";
 import { imagenUrl } from "@/lib/storage";
 import { Badge } from "@/components/ui/Badge";
 import { ProductForm, type ProductoExistente } from "@/components/products/ProductForm";
+import { ProductSuppliers } from "@/components/products/ProductSuppliers";
 
 export default async function EditarProductoPage({
   params,
@@ -32,10 +33,34 @@ export default async function EditarProductoPage({
 
   if (!prod) notFound();
 
-  const [categorias, tiers] = await Promise.all([
-    opcionesCategoria(supabase, catalogo.id),
-    tiersDelCatalogo(supabase, catalogo.id),
-  ]);
+  const [categorias, tiers, { data: vinculosRaw }, { data: proveedores }] =
+    await Promise.all([
+      opcionesCategoria(supabase, catalogo.id),
+      tiersDelCatalogo(supabase, catalogo.id),
+      supabase
+        .from("product_suppliers")
+        .select(
+          "supplier_id, supplier_sku, cost, lead_time_days, is_primary, suppliers(name)",
+        )
+        .eq("product_id", id),
+      supabase
+        .from("suppliers")
+        .select("id, name")
+        .eq("catalog_id", catalogo.id)
+        .eq("is_deleted", false)
+        .eq("is_active", true)
+        .order("name"),
+    ]);
+
+  const vinculos = (vinculosRaw ?? []).map((v) => ({
+    supplier_id: v.supplier_id,
+    supplier_name:
+      (v.suppliers as { name: string } | null)?.name ?? "Proveedor",
+    supplier_sku: v.supplier_sku,
+    cost: v.cost != null ? Number(v.cost) : null,
+    lead_time_days: v.lead_time_days,
+    is_primary: v.is_primary,
+  }));
 
   const existente: ProductoExistente = {
     id: prod.id,
@@ -106,14 +131,22 @@ export default async function EditarProductoPage({
           No tenés permiso de edición en este catálogo.
         </p>
       ) : (
-        <ProductForm
-          slug={slug}
-          catalogId={catalogo.id}
-          categorias={categorias}
-          tiers={tiers}
-          producto={existente}
-          puedeEditarPrecios={esAdminCatalogo(catalogo)}
-        />
+        <div className="space-y-5 pb-24">
+          <ProductForm
+            slug={slug}
+            catalogId={catalogo.id}
+            categorias={categorias}
+            tiers={tiers}
+            producto={existente}
+            puedeEditarPrecios={esAdminCatalogo(catalogo)}
+          />
+          <ProductSuppliers
+            slug={slug}
+            productId={prod.id}
+            vinculos={vinculos}
+            proveedores={proveedores ?? []}
+          />
+        </div>
       )}
     </div>
   );
