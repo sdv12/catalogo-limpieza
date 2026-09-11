@@ -29,6 +29,9 @@ type Stats = {
   proveedores?: number;
   inventario_costo?: number;
   unidades_stock?: number;
+  deuda_total?: number;
+  clientes_con_deuda?: number;
+  clientes_en_mora?: number;
 };
 
 export default async function CatalogoDashboardPage({
@@ -106,9 +109,17 @@ export default async function CatalogoDashboardPage({
     {
       label: "Clientes",
       valor: clientes ?? 0,
-      detalle: "activos",
+      detalle:
+        (stats.clientes_con_deuda ?? 0) > 0
+          ? `con deuda: ${stats.clientes_con_deuda}${
+              (stats.clientes_en_mora ?? 0) > 0
+                ? ` · en mora: ${stats.clientes_en_mora}`
+                : ""
+            }`
+          : "activos",
       icon: Users,
       href: `/panel/${slug}/clientes`,
+      alerta: (stats.clientes_en_mora ?? 0) > 0,
     },
     {
       label: "Proveedores",
@@ -193,6 +204,41 @@ export default async function CatalogoDashboardPage({
             )}
           </CardBody>
         </Card>
+      )}
+
+      {admin && (stats.deuda_total ?? 0) > 0 && (
+        <Link href={`/panel/${slug}/clientes?deuda=con_deuda`}>
+          <Card className="transition-colors hover:border-primario">
+            <CardBody className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+              <div>
+                <span className="text-xs uppercase tracking-wide text-texto-sec">
+                  Cuentas por cobrar
+                </span>
+                <p className="text-lg font-semibold tabular-nums text-error">
+                  {formatearMoneda(stats.deuda_total ?? 0)}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs uppercase tracking-wide text-texto-sec">
+                  Clientes con deuda
+                </span>
+                <p className="text-lg font-semibold tabular-nums text-texto">
+                  {stats.clientes_con_deuda ?? 0}
+                </p>
+              </div>
+              {(stats.clientes_en_mora ?? 0) > 0 && (
+                <div>
+                  <span className="text-xs uppercase tracking-wide text-texto-sec">
+                    En mora
+                  </span>
+                  <p className="text-lg font-semibold tabular-nums text-alerta">
+                    {stats.clientes_en_mora}
+                  </p>
+                </div>
+              )}
+            </CardBody>
+          </Card>
+        </Link>
       )}
 
       {accesos.length > 0 && (

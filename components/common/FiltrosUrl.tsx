@@ -136,6 +136,29 @@ export function SelectUrl({
   );
 }
 
+/** Input de fecha ligado a un parámetro de la URL (yyyy-mm-dd). */
+export function DateUrl({
+  param,
+  ariaLabel,
+  className,
+}: {
+  param: string;
+  ariaLabel: string;
+  className?: string;
+}) {
+  const searchParams = useSearchParams();
+  const setParam = useSetParam();
+  return (
+    <Input
+      type="date"
+      value={searchParams.get(param) ?? ""}
+      onChange={(e) => setParam({ [param]: e.target.value })}
+      aria-label={ariaLabel}
+      className={className}
+    />
+  );
+}
+
 /** Checkbox ligado a un parámetro de la URL ("1" / vacío). */
 export function CheckboxUrl({
   param,

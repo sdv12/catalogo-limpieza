@@ -28,6 +28,10 @@ export const customerSchema = z.object({
     (v) => (v === "" || v == null ? null : v),
     z.string().uuid().nullable(),
   ),
+  assigned_seller: z.preprocess(
+    (v) => (v === "" || v == null ? null : v),
+    z.string().uuid().nullable(),
+  ),
   credit_limit: z.coerce.number().min(0).default(0),
   notes: opt,
   is_active: z.coerce.boolean().default(true),

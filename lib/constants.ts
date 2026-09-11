@@ -78,6 +78,7 @@ export const ETIQUETA_ENTIDAD: Record<string, string> = {
   supplier: "Proveedor",
   product_supplier: "Proveedor del producto",
   promotion: "Promo",
+  customer_transaction: "Movimiento de cuenta",
 };
 
 export const TIPOS_DOC = ["DNI", "CUIT", "CUIL", "CDI", "Pasaporte", "Otro"] as const;
@@ -126,6 +127,33 @@ export const PROVINCIAS_AR = [
   "Tierra del Fuego",
   "Tucumán",
 ] as const;
+
+/** Movimientos de cuenta corriente de clientes. */
+export const TIPOS_MOVIMIENTO_CC = [
+  "cargo",
+  "pago",
+  "nota_credito",
+  "nota_debito",
+  "ajuste",
+] as const;
+export type TipoMovimientoCC = (typeof TIPOS_MOVIMIENTO_CC)[number];
+
+export const ETIQUETA_MOVIMIENTO_CC: Record<TipoMovimientoCC, string> = {
+  cargo: "Cargo (venta / factura)",
+  pago: "Pago recibido",
+  nota_credito: "Nota de crédito",
+  nota_debito: "Nota de débito",
+  ajuste: "Ajuste manual",
+};
+
+/** Signo esperado del importe según el tipo de movimiento (null = cualquiera). */
+export const SIGNO_MOVIMIENTO_CC: Record<TipoMovimientoCC, 1 | -1 | null> = {
+  cargo: 1,
+  nota_debito: 1,
+  pago: -1,
+  nota_credito: -1,
+  ajuste: null,
+};
 
 export const MONEDA_DEFAULT = "ARS";
 

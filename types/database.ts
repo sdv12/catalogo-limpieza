@@ -224,10 +224,78 @@ export type Database = {
           },
         ]
       }
+      customer_transactions: {
+        Row: {
+          amount: number
+          catalog_id: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
+          due_date: string | null
+          id: string
+          is_deleted: boolean
+          kind: string
+          note: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          amount: number
+          catalog_id: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          due_date?: string | null
+          id?: string
+          is_deleted?: boolean
+          kind: string
+          note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          amount?: number
+          catalog_id?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          due_date?: string | null
+          id?: string
+          is_deleted?: boolean
+          kind?: string
+          note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_transactions_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_transactions_customer_id_catalog_id_fkey"
+            columns: ["customer_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
+          assigned_seller: string | null
           attributes: Json
+          balance: number
           catalog_id: string
           city: string | null
           created_at: string
@@ -242,6 +310,7 @@ export type Database = {
           is_active: boolean
           is_deleted: boolean
           name: string
+          next_due_date: string | null
           notes: string | null
           phone: string | null
           price_tier_id: string | null
@@ -252,7 +321,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          assigned_seller?: string | null
           attributes?: Json
+          balance?: number
           catalog_id: string
           city?: string | null
           created_at?: string
@@ -267,6 +338,7 @@ export type Database = {
           is_active?: boolean
           is_deleted?: boolean
           name: string
+          next_due_date?: string | null
           notes?: string | null
           phone?: string | null
           price_tier_id?: string | null
@@ -277,7 +349,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          assigned_seller?: string | null
           attributes?: Json
+          balance?: number
           catalog_id?: string
           city?: string | null
           created_at?: string
@@ -292,6 +366,7 @@ export type Database = {
           is_active?: boolean
           is_deleted?: boolean
           name?: string
+          next_due_date?: string | null
           notes?: string | null
           phone?: string | null
           price_tier_id?: string | null
@@ -313,6 +388,48 @@ export type Database = {
             columns: ["price_tier_id", "catalog_id"]
             isOneToOne: false
             referencedRelation: "price_tiers"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
+      debt_notifications: {
+        Row: {
+          catalog_id: string
+          customer_id: string
+          due_date: string
+          id: string
+          recipients: Json
+          sent_at: string
+        }
+        Insert: {
+          catalog_id: string
+          customer_id: string
+          due_date: string
+          id?: string
+          recipients?: Json
+          sent_at?: string
+        }
+        Update: {
+          catalog_id?: string
+          customer_id?: string
+          due_date?: string
+          id?: string
+          recipients?: Json
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_notifications_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debt_notifications_customer_id_catalog_id_fkey"
+            columns: ["customer_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id", "catalog_id"]
           },
         ]
@@ -1188,6 +1305,18 @@ export type Database = {
       }
       catalog_stats: { Args: { p_catalog_id: string }; Returns: Json }
       category_path: { Args: { p_category_id: string }; Returns: string }
+      customers_por_cobrar: {
+        Args: { p_catalog_id: string; p_dias_antes?: number }
+        Returns: {
+          assigned_seller: string
+          balance: number
+          customer_id: string
+          email: string
+          name: string
+          next_due_date: string
+          phone: string
+        }[]
+      }
       duplicate_product: { Args: { p_product_id: string }; Returns: string }
       is_catalog_admin: { Args: { cat: string }; Returns: boolean }
       is_catalog_member: { Args: { cat: string }; Returns: boolean }

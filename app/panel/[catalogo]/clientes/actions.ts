@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { exigirEdicion, type ResultadoAccion } from "@/lib/guards";
+import { exigirEdicion, exigirAdmin, type ResultadoAccion } from "@/lib/guards";
 import { customerSchema, type CustomerInput } from "@/lib/validation/customer";
+import { movimientoSchema, type MovimientoInput } from "@/lib/validation/ledger";
 
 function rev(slug: string, id?: string) {
   revalidatePath(`/panel/${slug}/clientes`);
@@ -118,4 +119,57 @@ export async function restaurarCliente(
   if (error) return { ok: false, message: error.message };
   rev(slug, id);
   return { ok: true, message: "Cliente restaurado" };
+}
+
+// ------------------------------------------------------------
+// Cuenta corriente
+// ------------------------------------------------------------
+export async function agregarMovimiento(
+  slug: string,
+  customerId: string,
+  input: MovimientoInput,
+): Promise<ResultadoAccion> {
+  const catalogo = await exigirEdicion(slug);
+  const parsed = movimientoSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0].message };
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { error } = await supabase.from("customer_transactions").insert({
+    catalog_id: catalogo.id,
+    customer_id: customerId,
+    kind: parsed.data.kind,
+    amount: parsed.data.amount,
+    due_date: parsed.data.due_date,
+    note: parsed.data.note,
+    created_by: user!.id,
+    updated_by: user!.id,
+  });
+  if (error) return { ok: false, message: error.message };
+  rev(slug, customerId);
+  return { ok: true, message: "Movimiento registrado" };
+}
+
+export async function eliminarMovimiento(
+  slug: string,
+  customerId: string,
+  movimientoId: string,
+): Promise<ResultadoAccion> {
+  await exigirAdmin(slug);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from("customer_transactions")
+    .update({ is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: user!.id })
+    .eq("id", movimientoId)
+    .eq("customer_id", customerId);
+  if (error) return { ok: false, message: error.message };
+  rev(slug, customerId);
+  return { ok: true, message: "Movimiento eliminado" };
 }

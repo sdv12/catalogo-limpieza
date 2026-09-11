@@ -3,10 +3,12 @@ import { Plus } from "lucide-react";
 import { resolverCatalogo, puedeEditar } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { sanitizarBusqueda } from "@/lib/format";
+import { vendedoresDelCatalogo } from "@/lib/catalog-data";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/Table";
 import { Pagination } from "@/components/ui/Pagination";
 import { PeopleFilters } from "@/components/common/PeopleFilters";
+import { SelectUrl, DateUrl } from "@/components/common/FiltrosUrl";
 import { CustomersTable } from "@/components/customers/CustomersTable";
 
 export const metadata = { title: "Clientes — Catálogo" };
@@ -29,11 +31,12 @@ export default async function ClientesPage({
   const pagina = Math.max(1, Number(sp.page) || 1);
   const verEliminados = sp.eliminados === "1";
   const desde = (pagina - 1) * POR_PAGINA;
+  const hoy = new Date().toISOString().slice(0, 10);
 
   let query = supabase
     .from("customers")
     .select(
-      "id, name, doc_type, doc_number, tax_condition, email, phone, city, is_active, is_deleted",
+      "id, name, doc_type, doc_number, tax_condition, email, phone, city, is_active, is_deleted, balance, next_due_date, assigned_seller",
       { count: "exact" },
     )
     .eq("catalog_id", catalogo.id);
@@ -45,6 +48,10 @@ export default async function ClientesPage({
     const t = sanitizarBusqueda(sp.q);
     query = query.or(`name.ilike.%${t}%,doc_number.ilike.%${t}%,email.ilike.%${t}%`);
   }
+  if (sp.deuda === "con_deuda") query = query.gt("balance", 0);
+  if (sp.deuda === "mora") query = query.gt("balance", 0).lt("next_due_date", hoy);
+  if (sp.vencehasta) query = query.gt("balance", 0).lte("next_due_date", sp.vencehasta);
+  if (sp.vendedor) query = query.eq("assigned_seller", sp.vendedor);
 
   // El listado se ordena por documento (DNI/CUIT), como pidió el cliente.
   const { data: filas, count } = await query
@@ -55,6 +62,8 @@ export default async function ClientesPage({
 
   const soloLectura = !puedeEditar(catalogo);
   const total = count ?? 0;
+  const vendedores = await vendedoresDelCatalogo(supabase, catalogo.id);
+  const vendedorPorId = new Map(vendedores.map((v) => [v.id, v.label]));
 
   const hacerHref = (cambios: SP) => {
     const q = new URLSearchParams();
@@ -85,7 +94,32 @@ export default async function ClientesPage({
         )}
       </div>
 
-      <PeopleFilters placeholder="Buscar por nombre, documento o email…" />
+      <PeopleFilters
+        placeholder="Buscar por nombre, documento o email…"
+        extra={
+          <>
+            <SelectUrl param="deuda" ariaLabel="Filtrar por deuda" className="sm:w-40">
+              <option value="">Deuda: todos</option>
+              <option value="con_deuda">Con deuda</option>
+              <option value="mora">En mora</option>
+            </SelectUrl>
+            <label className="flex h-10 items-center gap-1.5 text-sm text-texto-sec">
+              Vence hasta
+              <DateUrl param="vencehasta" ariaLabel="Vence hasta" className="w-auto" />
+            </label>
+            {vendedores.length > 0 && (
+              <SelectUrl param="vendedor" ariaLabel="Filtrar por vendedor" className="sm:w-44">
+                <option value="">Todos los vendedores</option>
+                {vendedores.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.label}
+                  </option>
+                ))}
+              </SelectUrl>
+            )}
+          </>
+        }
+      />
 
       {(filas?.length ?? 0) === 0 ? (
         <EmptyState
@@ -96,7 +130,13 @@ export default async function ClientesPage({
         <>
           <CustomersTable
             slug={slug}
-            filas={filas ?? []}
+            filas={(filas ?? []).map((f) => ({
+              ...f,
+              balance: Number(f.balance),
+              vendedor: f.assigned_seller
+                ? (vendedorPorId.get(f.assigned_seller) ?? null)
+                : null,
+            }))}
             soloLectura={soloLectura}
           />
           <Pagination

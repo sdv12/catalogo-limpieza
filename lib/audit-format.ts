@@ -37,6 +37,31 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   variant_id: "Presentación",
   alt: "Texto alternativo",
   storage_path: "Archivo",
+  kind: "Tipo",
+  amount: "Importe",
+  due_date: "Fecha de cobro",
+  balance: "Saldo",
+  next_due_date: "Próximo vencimiento",
+  assigned_seller: "Vendedor asignado",
+  credit_limit: "Límite de cuenta corriente",
+  doc_type: "Tipo de documento",
+  doc_number: "Número de documento",
+  email: "Email",
+  phone: "Teléfono",
+  address: "Dirección",
+  city: "Ciudad",
+  province: "Provincia",
+  notes: "Notas",
+  supplier_sku: "Código del proveedor",
+  cost: "Costo",
+  lead_time_days: "Días de entrega",
+  discount_type: "Tipo de descuento",
+  discount_value: "Descuento",
+  title: "Título",
+  subtitle: "Subtítulo",
+  link: "Link",
+  starts_at: "Vigente desde",
+  ends_at: "Vigente hasta",
 };
 
 const CAMPOS_OCULTOS = new Set([
@@ -69,9 +94,22 @@ export function formatearValorAuditoria(
 ): string {
   if (v == null || v === "") return "—";
   if (typeof v === "boolean") return v ? "Sí" : "No";
-  if (field === "price") return formatearMoneda(Number(v));
+  if (["price", "amount", "balance", "credit_limit", "cost", "discount_value"].includes(field) )
+    return field === "discount_value" ? formatearNumero(Number(v)) : formatearMoneda(Number(v));
   if (["stock", "min_stock", "size_value", "sort_order", "position"].includes(field))
     return formatearNumero(Number(v));
+  if (field === "kind") {
+    return (
+      {
+        cargo: "Cargo (venta / factura)",
+        pago: "Pago recibido",
+        nota_credito: "Nota de crédito",
+        nota_debito: "Nota de débito",
+        ajuste: "Ajuste manual",
+      }[String(v)] ?? String(v)
+    );
+  }
+  if (field === "assigned_seller") return "otro vendedor";
   if (field === "status")
     return ETIQUETA_ESTADO[v as "active" | "inactive"] ?? String(v);
   if (field === "size_unit")

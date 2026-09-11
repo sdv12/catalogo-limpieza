@@ -31,20 +31,24 @@ export type ClienteExistente = {
   city: string | null;
   province: string | null;
   price_tier_id: string | null;
+  assigned_seller: string | null;
   credit_limit: number;
   notes: string | null;
   is_active: boolean;
 };
 
 type Tier = { id: string; name: string };
+type Vendedor = { id: string; label: string };
 
 export function CustomerForm({
   slug,
   tiers,
+  vendedores,
   cliente,
 }: {
   slug: string;
   tiers: Tier[];
+  vendedores: Vendedor[];
   cliente?: ClienteExistente;
 }) {
   const router = useRouter();
@@ -61,6 +65,7 @@ export function CustomerForm({
     city: cliente?.city ?? "",
     province: cliente?.province ?? "",
     price_tier_id: cliente?.price_tier_id ?? "",
+    assigned_seller: cliente?.assigned_seller ?? "",
     credit_limit: cliente?.credit_limit != null ? String(cliente.credit_limit) : "0",
     notes: cliente?.notes ?? "",
     is_active: cliente?.is_active ?? true,
@@ -90,6 +95,7 @@ export function CustomerForm({
       city: f.city.trim() || null,
       province: f.province.trim() || null,
       price_tier_id: f.price_tier_id || null,
+      assigned_seller: f.assigned_seller || null,
       credit_limit: parsearNumero(f.credit_limit) ?? 0,
       notes: f.notes.trim() || null,
       is_active: f.is_active,
@@ -250,6 +256,24 @@ export function CustomerForm({
                 {formatearMoneda(parsearNumero(f.credit_limit) ?? 0)}
               </p>
             </div>
+          </div>
+
+          <div>
+            <Label>Vendedor asignado</Label>
+            <Select
+              value={f.assigned_seller}
+              onChange={(e) => set("assigned_seller", e.target.value)}
+            >
+              <option value="">Sin asignar</option>
+              {vendedores.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
+              ))}
+            </Select>
+            <p className="mt-1 text-xs text-texto-tenue">
+              Recibe el aviso cuando se acerca un vencimiento de este cliente.
+            </p>
           </div>
 
           <div>

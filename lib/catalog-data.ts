@@ -56,6 +56,26 @@ export async function proveedoresDelCatalogo(supabase: DB, catalogId: string) {
   return data ?? [];
 }
 
+/** Miembros admin/empleado del catálogo, para asignar como vendedor. */
+export async function vendedoresDelCatalogo(supabase: DB, catalogId: string) {
+  const { data: miembros } = await supabase
+    .from("catalog_members")
+    .select("user_id, role")
+    .eq("catalog_id", catalogId)
+    .in("role", ["admin", "empleado"]);
+  const ids = (miembros ?? []).map((m) => m.user_id);
+  if (ids.length === 0) return [];
+
+  const { data: perfiles } = await supabase
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("id", ids);
+
+  return (perfiles ?? [])
+    .map((p) => ({ id: p.id, label: p.full_name || p.email || "Usuario" }))
+    .sort((a, b) => a.label.localeCompare(b.label, "es"));
+}
+
 /** Niveles de precio activos del catálogo, ordenados. */
 export async function tiersDelCatalogo(supabase: DB, catalogId: string) {
   const { data } = await supabase
