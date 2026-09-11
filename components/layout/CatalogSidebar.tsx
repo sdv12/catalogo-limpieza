@@ -12,6 +12,7 @@ import {
   Users,
   Truck,
   Megaphone,
+  UserCog,
   ChevronLeft,
   X,
 } from "lucide-react";
@@ -39,6 +40,7 @@ function items(slug: string): Item[] {
     { href: `${b}/precios`, label: "Precios", icon: Tags, roles: soloAdmin },
     { href: `${b}/promos`, label: "Promos", icon: Megaphone, roles: soloAdmin },
     { href: `${b}/importar`, label: "Carga masiva", icon: Upload, roles: soloAdmin },
+    { href: `${b}/usuarios`, label: "Usuarios", icon: UserCog, roles: soloAdmin },
     { href: `${b}/actividad`, label: "Actividad", icon: History },
   ];
 }
