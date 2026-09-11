@@ -31,9 +31,14 @@ export function AuditEntry({
   mostrarProducto?: boolean;
   maps?: MapasAuditoria;
 }) {
+  const esBaja = entrada.action === "delete";
   return (
     <details className="group border-b border-linea last:border-0">
-      <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-1 py-2.5 marker:hidden">
+      <summary
+        className={`flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-1 py-2.5 marker:hidden ${
+          esBaja ? "opacity-55" : ""
+        }`}
+      >
         <ActionBadge action={entrada.action} />
         <span className="text-sm text-texto-sec">
           {ETIQUETA_ENTIDAD[entrada.entity_type] ?? entrada.entity_type}

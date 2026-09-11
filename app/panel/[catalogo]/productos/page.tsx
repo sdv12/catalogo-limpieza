@@ -46,14 +46,18 @@ export default async function ProductosPage({
     sp.stock === "low" || sp.stock === "ok" ? sp.stock : undefined;
   const admin = esAdminCatalogo(catalogo);
 
+  // Marca y proveedor son datos de gestión: solo el administrador filtra por ellos.
+  const marcaFiltro = admin ? sp.marca || undefined : undefined;
+  const proveedorFiltro = admin ? sp.proveedor || undefined : undefined;
+
   const [{ data: filas, error }, { data: categorias }, marcas, proveedores, tiers] =
     await Promise.all([
       supabase.rpc("search_products", {
         p_catalog_id: catalogo.id,
         p_q: sp.q?.trim() || undefined,
         p_category_id: sp.categoria || undefined,
-        p_brand: sp.marca || undefined,
-        p_supplier_id: sp.proveedor || undefined,
+        p_brand: marcaFiltro,
+        p_supplier_id: proveedorFiltro,
         p_status: estado,
         p_stock: stock,
         p_include_deleted: verBorrados,
@@ -67,8 +71,8 @@ export default async function ProductosPage({
         .select("id, name, parent_id")
         .eq("catalog_id", catalogo.id)
         .order("sort_order"),
-      marcasDelCatalogo(supabase, catalogo.id),
-      proveedoresDelCatalogo(supabase, catalogo.id),
+      admin ? marcasDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
+      admin ? proveedoresDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
       admin ? tiersDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
     ]);
 
@@ -78,8 +82,8 @@ export default async function ProductosPage({
   const filtro = {
     q: sp.q?.trim() || undefined,
     categoria: sp.categoria || undefined,
-    marca: sp.marca || undefined,
-    proveedor: sp.proveedor || undefined,
+    marca: marcaFiltro,
+    proveedor: proveedorFiltro,
     estado,
     stock,
   };
@@ -122,15 +126,7 @@ export default async function ProductosPage({
         categorias={categorias ?? []}
         marcas={marcas}
         proveedores={proveedores}
-        valores={{
-          q: sp.q ?? "",
-          categoria: sp.categoria ?? "",
-          marca: sp.marca ?? "",
-          proveedor: sp.proveedor ?? "",
-          estado: sp.estado ?? "",
-          stock: sp.stock ?? "",
-          borrados: verBorrados,
-        }}
+        admin={admin}
       />
 
       {admin && !verBorrados && total > 0 && (
@@ -156,6 +152,7 @@ export default async function ProductosPage({
             slug={slug}
             filas={filas ?? []}
             soloLectura={soloLectura}
+            admin={admin}
             orden={{ sort, dir }}
             hacerHref={hacerHref}
           />

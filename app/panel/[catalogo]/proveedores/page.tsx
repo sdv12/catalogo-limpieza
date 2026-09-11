@@ -85,14 +85,7 @@ export default async function ProveedoresPage({
         )}
       </div>
 
-      <PeopleFilters
-        placeholder="Buscar por nombre, documento o contacto…"
-        valores={{
-          q: sp.q ?? "",
-          estado: sp.estado ?? "",
-          eliminados: verEliminados,
-        }}
-      />
+      <PeopleFilters placeholder="Buscar por nombre, documento o contacto…" />
 
       {(filas?.length ?? 0) === 0 ? (
         <EmptyState

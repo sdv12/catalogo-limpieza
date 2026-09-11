@@ -76,6 +76,8 @@ export const ETIQUETA_ENTIDAD: Record<string, string> = {
   member: "Usuario",
   customer: "Cliente",
   supplier: "Proveedor",
+  product_supplier: "Proveedor del producto",
+  promotion: "Promo",
 };
 
 export const TIPOS_DOC = ["DNI", "CUIT", "CUIL", "CDI", "Pasaporte", "Otro"] as const;

@@ -32,7 +32,12 @@ export function RecentActivity({
   return (
     <ul className="divide-y divide-linea">
       {cambios.map((c) => (
-        <li key={c.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 py-2 text-sm">
+        <li
+          key={c.id}
+          className={`flex flex-wrap items-center gap-x-2 gap-y-1 py-2 text-sm ${
+            c.action === "delete" ? "opacity-55" : ""
+          }`}
+        >
           <ActionBadge action={c.action} />
           <span className="text-texto-sec">
             {ETIQUETA_ENTIDAD[c.entity_type] ?? c.entity_type}

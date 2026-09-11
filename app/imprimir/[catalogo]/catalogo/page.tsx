@@ -25,98 +25,109 @@ export default async function CatalogoPage({
         tierActual={tier?.code}
       />
 
-      <div className="mx-auto max-w-[210mm] px-6 py-8">
-        <section className="salto mb-8 flex flex-col items-center border-b border-[#e2e5e9] pb-8 text-center">
-          {catalogo.logo_path ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imagenUrl(catalogo.logo_path)}
-              alt={catalogo.name}
-              className="mb-4 h-20 w-auto object-contain"
-            />
-          ) : (
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#0d9488] text-2xl font-bold text-white">
-              {catalogo.name.charAt(0)}
-            </div>
-          )}
-          <h1 className="text-2xl font-semibold tracking-tight text-[#1a1d21]">
-            {catalogo.name}
-          </h1>
-          <p className="mt-1 text-sm text-[#5c6570]">Catálogo para revendedores</p>
-          <p className="mt-3 text-xs uppercase tracking-wider text-[#8a929c]">
-            {tier ? `Precio ${tier.name}` : "Sin lista de precios"} ·{" "}
-            {formatearFecha(new Date())} · {productos.length} productos
-          </p>
-        </section>
+      <div className="mx-auto max-w-[210mm] p-3 sm:p-6 print:p-0">
+        <div className="papel overflow-hidden print:overflow-visible">
+          {/* Portada */}
+          <section className="salto flex flex-col items-center bg-[#f0fdfa] px-8 py-12 text-center">
+            {catalogo.logo_path ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imagenUrl(catalogo.logo_path)}
+                alt={catalogo.name}
+                className="mb-5 h-20 w-auto object-contain"
+              />
+            ) : (
+              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0d9488] text-2xl font-bold text-white">
+                {catalogo.name.charAt(0)}
+              </div>
+            )}
+            <h1 className="text-[26px] font-semibold tracking-tight text-[#0f2f2b]">
+              {catalogo.name}
+            </h1>
+            <p className="mt-1 text-sm text-[#3f6b64]">
+              Catálogo para revendedores
+            </p>
+            <div className="mt-5 h-px w-16 bg-[#0d9488]/30" />
+            <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-[#5f8c85]">
+              {tier ? `Lista ${tier.name}` : "Sin lista de precios"} ·{" "}
+              {formatearFecha(new Date())} · {productos.length} productos
+            </p>
+          </section>
 
-        {productos.length === 0 ? (
-          <p className="py-16 text-center text-sm text-[#8a929c]">
-            No hay productos para los filtros elegidos.
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-5">
-            {productos.map((p) => (
-              <article
-                key={p.id}
-                className="evitar-corte overflow-hidden rounded-xl border border-[#e2e5e9]"
-              >
-                <div className="flex h-40 items-center justify-center bg-[#f6f7f9] p-3">
-                  {p.imagen ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={imagenUrl(p.imagen)}
-                      alt={p.nombre}
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <span className="text-xs text-[#cdd2d8]">Sin imagen</span>
-                  )}
-                </div>
-                <div className="p-3.5">
-                  {p.categoria && (
-                    <span className="text-[8px] font-semibold uppercase tracking-[0.12em] text-[#8a929c]">
-                      {p.categoria}
-                    </span>
-                  )}
-                  <h2 className="mt-0.5 text-sm font-semibold leading-tight text-[#1a1d21]">
-                    {p.nombre}
-                  </h2>
-                  {p.marca && (
-                    <p className="text-[11px] text-[#5c6570]">{p.marca}</p>
-                  )}
-
-                  <table className="mt-2.5 w-full text-[11px]">
-                    <tbody>
-                      {p.presentaciones.map((v, i) => (
-                        <tr key={i} className="border-t border-[#e2e5e9]">
-                          <td className="py-1 pr-2 text-[#5c6570]">
-                            {v.medida ?? v.nombre ?? "Unidad"}
-                          </td>
-                          <td className="py-1 pr-2 text-right font-semibold text-[#0f766e] tabular-nums">
-                            {v.precio != null ? formatearMoneda(v.precio) : "—"}
-                          </td>
-                          <td className="w-[38%] py-1 pl-2 text-[#8a929c]">
-                            <span className="inline-flex w-full items-end gap-1">
-                              Mi precio
-                              <span className="flex-1 border-b border-dotted border-[#8a929c]" />
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                      {p.presentaciones.length === 0 && (
-                        <tr className="border-t border-[#e2e5e9]">
-                          <td colSpan={3} className="py-1 text-[#8a929c]">
-                            Sin presentaciones cargadas
-                          </td>
-                        </tr>
+          <div className="p-5 sm:p-8 print:p-6">
+            {productos.length === 0 ? (
+              <p className="py-16 text-center text-sm text-[#8a929c]">
+                No hay productos para los filtros elegidos.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 print:grid-cols-2 print:gap-4">
+                {productos.map((p) => (
+                  <article
+                    key={p.id}
+                    className="evitar-corte flex flex-col overflow-hidden rounded-2xl border border-[#e0e2e7]"
+                  >
+                    {p.imagen && (
+                      <div className="flex aspect-[5/3] items-center justify-center border-b border-[#eceef1] bg-[#fafafa] p-4">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imagenUrl(p.imagen)}
+                          alt={p.nombre}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col p-4">
+                      {p.categoria && (
+                        <span className="mb-1 inline-flex w-fit rounded bg-[#f0fdfa] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.1em] text-[#0f766e]">
+                          {p.categoria}
+                        </span>
                       )}
-                    </tbody>
-                  </table>
-                </div>
-              </article>
-            ))}
+                      <h2 className="text-[15px] font-semibold leading-snug text-[#111]">
+                        {p.nombre}
+                      </h2>
+                      {p.marca && (
+                        <p className="text-[11px] uppercase tracking-wide text-[#9aa0a8]">
+                          {p.marca}
+                        </p>
+                      )}
+
+                      <div className="mt-3 divide-y divide-[#eceef1] border-t border-[#e6e8ec]">
+                        {p.presentaciones.length === 0 ? (
+                          <p className="py-2 text-[11px] text-[#9aa0a8]">
+                            Sin presentaciones cargadas
+                          </p>
+                        ) : (
+                          p.presentaciones.map((v, i) => (
+                            <div
+                              key={i}
+                              className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 py-2 text-[11px]"
+                            >
+                              <span className="text-[#5c6570]">
+                                {v.medida ?? v.nombre ?? "Unidad"}
+                              </span>
+                              <span className="font-bold tabular-nums text-[#0f766e]">
+                                {v.precio != null ? formatearMoneda(v.precio) : "—"}
+                              </span>
+                              <span className="col-span-2 flex items-end gap-1.5 text-[10px] text-[#9aa0a8]">
+                                Mi precio
+                                <span className="flex-1 translate-y-[-2px] border-b border-dotted border-[#b8bdc5]" />
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            <p className="mt-8 border-t border-[#e6e8ec] pt-4 text-center text-[10px] text-[#9aa0a8]">
+              {catalogo.name} · Precios sujetos a modificación sin previo aviso ·{" "}
+              {formatearFecha(new Date())}
+            </p>
           </div>
-        )}
+        </div>
       </div>
     </>
   );

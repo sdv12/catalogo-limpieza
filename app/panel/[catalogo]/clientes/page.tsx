@@ -46,8 +46,10 @@ export default async function ClientesPage({
     query = query.or(`name.ilike.%${t}%,doc_number.ilike.%${t}%,email.ilike.%${t}%`);
   }
 
+  // El listado se ordena por documento (DNI/CUIT), como pidió el cliente.
   const { data: filas, count } = await query
     .order("is_deleted")
+    .order("doc_number", { nullsFirst: false })
     .order("name")
     .range(desde, desde + POR_PAGINA - 1);
 
@@ -83,14 +85,7 @@ export default async function ClientesPage({
         )}
       </div>
 
-      <PeopleFilters
-        placeholder="Buscar por nombre, documento o email…"
-        valores={{
-          q: sp.q ?? "",
-          estado: sp.estado ?? "",
-          eliminados: verEliminados,
-        }}
-      />
+      <PeopleFilters placeholder="Buscar por nombre, documento o email…" />
 
       {(filas?.length ?? 0) === 0 ? (
         <EmptyState

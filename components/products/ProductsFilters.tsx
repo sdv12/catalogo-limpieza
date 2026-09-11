@@ -1,63 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Search } from "lucide-react";
-import { Input, Select } from "@/components/ui/Field";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { SlidersHorizontal } from "lucide-react";
+import { BuscadorUrl, SelectUrl, CheckboxUrl } from "@/components/common/FiltrosUrl";
 
 type Categoria = { id: string; name: string; parent_id: string | null };
 type Proveedor = { id: string; name: string };
+
+const CLAVES = ["categoria", "marca", "proveedor", "estado", "stock", "borrados"];
 
 export function ProductsFilters({
   categorias,
   marcas,
   proveedores,
-  valores,
+  admin,
 }: {
   categorias: Categoria[];
   marcas: string[];
   proveedores: Proveedor[];
-  valores: {
-    q: string;
-    categoria: string;
-    marca: string;
-    proveedor: string;
-    estado: string;
-    stock: string;
-    borrados: boolean;
-  };
+  admin: boolean;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
-  const [q, setQ] = useState(valores.q);
-  const debounce = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  const setParam = (cambios: Record<string, string>) => {
-    const p = new URLSearchParams(searchParams.toString());
-    for (const [k, v] of Object.entries(cambios)) {
-      if (v) p.set(k, v);
-      else p.delete(k);
-    }
-    p.delete("page");
-    startTransition(() => router.replace(`${pathname}?${p.toString()}`));
-  };
-
-  // búsqueda con debounce; Enter la dispara al instante
-  useEffect(() => {
-    clearTimeout(debounce.current);
-    debounce.current = setTimeout(() => {
-      if (q.trim() !== valores.q) setParam({ q: q.trim() });
-    }, 350);
-    return () => clearTimeout(debounce.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
-
-  const buscarYa = () => {
-    clearTimeout(debounce.current);
-    if (q.trim() !== valores.q) setParam({ q: q.trim() });
-  };
+  const activos = CLAVES.filter((k) => searchParams.get(k)).length;
+  const [abierto, setAbierto] = useState(false);
 
   const opcionesCategoria = (() => {
     const hijos = new Map<string | null, Categoria[]>();
@@ -78,103 +44,79 @@ export function ProductsFilters({
   })();
 
   return (
-    <div className="flex flex-wrap items-end gap-2">
-      <div className="relative min-w-52 flex-1">
-        <Search
-          size={15}
-          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-texto-tenue"
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 sm:max-w-lg">
+        <BuscadorUrl
+          placeholder={
+            admin
+              ? "Buscar por nombre, SKU, marca o proveedor…"
+              : "Buscar por nombre o SKU…"
+          }
         />
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              buscarYa();
-            }
-          }}
-          placeholder="Buscar por nombre, SKU, marca o proveedor…"
-          className="pl-8"
-          aria-label="Buscar productos"
-        />
+        <button
+          type="button"
+          onClick={() => setAbierto((v) => !v)}
+          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-comp-sm border border-linea-fuerte bg-superficie px-3 text-sm text-texto hover:bg-superficie-sec sm:hidden"
+          aria-expanded={abierto}
+        >
+          <SlidersHorizontal size={15} />
+          Filtros
+          {activos > 0 && (
+            <span className="rounded-full bg-primario px-1.5 text-[11px] font-semibold text-white">
+              {activos}
+            </span>
+          )}
+        </button>
       </div>
 
-      <Select
-        value={valores.categoria}
-        onChange={(e) => setParam({ categoria: e.target.value })}
-        aria-label="Filtrar por categoría"
-        className="w-44"
+      <div
+        className={`${abierto ? "grid" : "hidden"} grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-end`}
       >
-        <option value="">Todas las categorías</option>
-        {opcionesCategoria.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.label}
-          </option>
-        ))}
-      </Select>
-
-      {marcas.length > 0 && (
-        <Select
-          value={valores.marca}
-          onChange={(e) => setParam({ marca: e.target.value })}
-          aria-label="Filtrar por marca"
-          className="w-40"
-        >
-          <option value="">Todas las marcas</option>
-          {marcas.map((m) => (
-            <option key={m} value={m}>
-              {m}
+        <SelectUrl param="categoria" ariaLabel="Filtrar por categoría" className="sm:w-48">
+          <option value="">Todas las categorías</option>
+          {opcionesCategoria.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.label}
             </option>
           ))}
-        </Select>
-      )}
+        </SelectUrl>
 
-      {proveedores.length > 0 && (
-        <Select
-          value={valores.proveedor}
-          onChange={(e) => setParam({ proveedor: e.target.value })}
-          aria-label="Filtrar por proveedor"
-          className="w-44"
-        >
-          <option value="">Todos los proveedores</option>
-          {proveedores.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </Select>
-      )}
+        {admin && marcas.length > 0 && (
+          <SelectUrl param="marca" ariaLabel="Filtrar por marca" className="sm:w-44">
+            <option value="">Todas las marcas</option>
+            {marcas.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </SelectUrl>
+        )}
 
-      <Select
-        value={valores.estado}
-        onChange={(e) => setParam({ estado: e.target.value })}
-        aria-label="Filtrar por estado"
-        className="w-36"
-      >
-        <option value="">Todos los estados</option>
-        <option value="active">Activos</option>
-        <option value="inactive">Inactivos</option>
-      </Select>
+        {admin && proveedores.length > 0 && (
+          <SelectUrl param="proveedor" ariaLabel="Filtrar por proveedor" className="sm:w-48">
+            <option value="">Todos los proveedores</option>
+            {proveedores.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </SelectUrl>
+        )}
 
-      <Select
-        value={valores.stock}
-        onChange={(e) => setParam({ stock: e.target.value })}
-        aria-label="Filtrar por stock"
-        className="w-36"
-      >
-        <option value="">Todo el stock</option>
-        <option value="low">Stock bajo</option>
-        <option value="ok">Stock ok</option>
-      </Select>
+        <SelectUrl param="estado" ariaLabel="Filtrar por estado" className="sm:w-40">
+          <option value="">Todos los estados</option>
+          <option value="active">Activos</option>
+          <option value="inactive">Inactivos</option>
+        </SelectUrl>
 
-      <label className="flex h-10 items-center gap-1.5 whitespace-nowrap text-sm text-texto-sec">
-        <input
-          type="checkbox"
-          checked={valores.borrados}
-          onChange={(e) => setParam({ borrados: e.target.checked ? "1" : "" })}
-        />
-        Ver dados de baja
-      </label>
+        <SelectUrl param="stock" ariaLabel="Filtrar por stock" className="sm:w-40">
+          <option value="">Todo el stock</option>
+          <option value="low">Stock bajo</option>
+          <option value="ok">Stock ok</option>
+        </SelectUrl>
+
+        <CheckboxUrl param="borrados" label="Ver dados de baja" />
+      </div>
     </div>
   );
 }

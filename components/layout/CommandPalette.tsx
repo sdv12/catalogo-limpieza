@@ -172,11 +172,12 @@ export function CommandPalette({ slug, rol }: { slug: string; rol: RolEfectivo }
       <button
         type="button"
         onClick={abrir}
-        className="hidden items-center gap-2 rounded-comp-sm border border-linea px-2.5 py-1.5 text-xs text-texto-tenue hover:bg-superficie-sec sm:flex"
+        aria-label="Buscar"
+        className="flex items-center gap-2 rounded-comp-sm border border-linea px-2 py-1.5 text-xs text-texto-tenue hover:bg-superficie-sec sm:px-2.5"
       >
-        <Search size={13} />
-        Buscar
-        <kbd className="rounded border border-linea bg-superficie-sec px-1 text-[10px]">
+        <Search size={14} />
+        <span className="hidden sm:inline">Buscar</span>
+        <kbd className="hidden rounded border border-linea bg-superficie-sec px-1 text-[10px] sm:inline">
           ⌘K
         </kbd>
       </button>
