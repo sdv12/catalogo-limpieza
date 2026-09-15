@@ -18,47 +18,64 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { RolEfectivo } from "@/lib/roles";
+import type { RolEfectivo, PermisoCatalogo } from "@/lib/roles";
 
 type Item = {
   href: string;
   label: string;
   icon: typeof Package;
   exact?: boolean;
-  /** roles que ven este item; si falta, lo ven todos */
-  roles?: RolEfectivo[];
   /** punto de aviso al lado del label (ej: facturación sin configurar) */
   pendiente?: boolean;
 };
 
-function items(slug: string, facturacionPendiente: boolean): Item[] {
+function items(
+  slug: string,
+  rol: RolEfectivo,
+  permisos: PermisoCatalogo[],
+  facturacionPendiente: boolean,
+): Item[] {
   const b = `/panel/${slug}`;
-  const soloAdmin: RolEfectivo[] = ["superadmin", "admin"];
-  return [
+  const esAdmin = rol === "superadmin" || rol === "admin";
+  const tiene = (p: PermisoCatalogo) =>
+    esAdmin || (rol === "empleado" && permisos.includes(p));
+
+  const base: Item[] = [
     { href: b, label: "Inicio", icon: LayoutDashboard, exact: true },
     { href: `${b}/productos`, label: "Productos", icon: Package },
     { href: `${b}/categorias`, label: "Categorías", icon: FolderTree },
     { href: `${b}/clientes`, label: "Clientes", icon: Users },
     { href: `${b}/proveedores`, label: "Proveedores", icon: Truck },
-    { href: `${b}/precios`, label: "Precios", icon: Tags, roles: soloAdmin },
-    { href: `${b}/promos`, label: "Promos", icon: Megaphone, roles: soloAdmin },
-    {
+  ];
+  if (tiene("precios_lote")) {
+    base.push({ href: `${b}/precios`, label: "Precios", icon: Tags });
+  }
+  if (tiene("promos")) {
+    base.push({ href: `${b}/promos`, label: "Promos", icon: Megaphone });
+  }
+  if (esAdmin) {
+    base.push({
       href: `${b}/facturacion`,
       label: "Facturación",
       icon: Receipt,
-      roles: soloAdmin,
       pendiente: facturacionPendiente,
-    },
-    { href: `${b}/importar`, label: "Carga masiva", icon: Upload, roles: soloAdmin },
-    { href: `${b}/usuarios`, label: "Usuarios", icon: UserCog, roles: soloAdmin },
-    { href: `${b}/actividad`, label: "Actividad", icon: History },
-  ];
+    });
+  }
+  if (tiene("carga_masiva")) {
+    base.push({ href: `${b}/importar`, label: "Carga masiva", icon: Upload });
+  }
+  if (tiene("usuarios")) {
+    base.push({ href: `${b}/usuarios`, label: "Usuarios", icon: UserCog });
+  }
+  base.push({ href: `${b}/actividad`, label: "Actividad", icon: History });
+  return base;
 }
 
 export function CatalogSidebar({
   slug,
   nombre,
   rol,
+  permisos,
   facturacionPendiente,
   abierto,
   onCerrar,
@@ -66,14 +83,13 @@ export function CatalogSidebar({
   slug: string;
   nombre: string;
   rol: RolEfectivo;
+  permisos: PermisoCatalogo[];
   facturacionPendiente: boolean;
   abierto: boolean;
   onCerrar: () => void;
 }) {
   const pathname = usePathname();
-  const visibles = items(slug, facturacionPendiente).filter(
-    (i) => !i.roles || i.roles.includes(rol),
-  );
+  const visibles = items(slug, rol, permisos, facturacionPendiente);
 
   return (
     <>

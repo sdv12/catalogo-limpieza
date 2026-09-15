@@ -3,7 +3,10 @@ import {
   resolverCatalogo,
   puedeEditar,
   esAdminCatalogo,
+  tienePermiso,
+  ETIQUETA_PERMISO,
   type CatalogoAccesible,
+  type PermisoCatalogo,
 } from "@/lib/dal";
 
 /**
@@ -27,6 +30,23 @@ export async function exigirAdmin(slug: string): Promise<CatalogoAccesible> {
   const catalogo = await resolverCatalogo(slug);
   if (!esAdminCatalogo(catalogo)) {
     throw new Error("Esta acción es solo para administradores del catálogo");
+  }
+  return catalogo;
+}
+
+/**
+ * Exige un permiso puntual del catálogo (admin lo tiene siempre; un
+ * empleado solo si se lo prendieron). Usar en las acciones que antes
+ * exigían admin pero ahora pueden delegarse: precios en lote, costos,
+ * carga masiva, promos, cuenta corriente, usuarios.
+ */
+export async function exigirPermiso(
+  slug: string,
+  permiso: PermisoCatalogo,
+): Promise<CatalogoAccesible> {
+  const catalogo = await resolverCatalogo(slug);
+  if (!tienePermiso(catalogo, permiso)) {
+    throw new Error(`No tenés el permiso "${ETIQUETA_PERMISO[permiso]}" en este catálogo`);
   }
   return catalogo;
 }

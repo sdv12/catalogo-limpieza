@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import {
   tiersDelCatalogo,
@@ -44,11 +44,12 @@ export default async function ProductosPage({
     sp.estado === "active" || sp.estado === "inactive" ? sp.estado : undefined;
   const stock: "low" | "ok" | undefined =
     sp.stock === "low" || sp.stock === "ok" ? sp.stock : undefined;
-  const admin = esAdminCatalogo(catalogo);
+  const verCostos = tienePermiso(catalogo, "costos");
+  const puedeRepreciar = tienePermiso(catalogo, "precios_lote");
 
-  // Marca y proveedor son datos de gestión: solo el administrador filtra por ellos.
-  const marcaFiltro = admin ? sp.marca || undefined : undefined;
-  const proveedorFiltro = admin ? sp.proveedor || undefined : undefined;
+  // Marca y proveedor son datos de gestión: solo quien ve costos filtra por ellos.
+  const marcaFiltro = verCostos ? sp.marca || undefined : undefined;
+  const proveedorFiltro = verCostos ? sp.proveedor || undefined : undefined;
 
   const [{ data: filas, error }, { data: categorias }, marcas, proveedores, tiers] =
     await Promise.all([
@@ -71,9 +72,9 @@ export default async function ProductosPage({
         .select("id, name, parent_id")
         .eq("catalog_id", catalogo.id)
         .order("sort_order"),
-      admin ? marcasDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
-      admin ? proveedoresDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
-      admin ? tiersDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
+      verCostos ? marcasDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
+      verCostos ? proveedoresDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
+      puedeRepreciar ? tiersDelCatalogo(supabase, catalogo.id) : Promise.resolve([]),
     ]);
 
   const total = filas?.[0]?.total_count ?? 0;
@@ -126,10 +127,10 @@ export default async function ProductosPage({
         categorias={categorias ?? []}
         marcas={marcas}
         proveedores={proveedores}
-        admin={admin}
+        verCostos={verCostos}
       />
 
-      {admin && !verBorrados && total > 0 && (
+      {puedeRepreciar && !verBorrados && total > 0 && (
         <ReprecioContextual
           slug={slug}
           tiers={tiers}
@@ -152,7 +153,7 @@ export default async function ProductosPage({
             slug={slug}
             filas={filas ?? []}
             soloLectura={soloLectura}
-            admin={admin}
+            verCostos={verCostos}
             orden={{ sort, dir }}
             hacerHref={hacerHref}
           />

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { exigirEdicion, exigirAdmin, type ResultadoAccion } from "@/lib/guards";
+import { exigirEdicion, exigirPermiso, type ResultadoAccion } from "@/lib/guards";
 import { customerSchema, type CustomerInput } from "@/lib/validation/customer";
 import { movimientoSchema, type MovimientoInput } from "@/lib/validation/ledger";
 
@@ -159,7 +159,7 @@ export async function eliminarMovimiento(
   customerId: string,
   movimientoId: string,
 ): Promise<ResultadoAccion> {
-  await exigirAdmin(slug);
+  await exigirPermiso(slug, "cuenta_corriente_admin");
   const supabase = await createClient();
   const {
     data: { user },

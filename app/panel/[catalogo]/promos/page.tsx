@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { resolverCatalogo, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { PromosManager, type PromoFila } from "@/components/promos/PromosManager";
 
@@ -12,7 +12,7 @@ export default async function PromosPage({
 }) {
   const { catalogo: slug } = await params;
   const catalogo = await resolverCatalogo(slug);
-  if (!esAdminCatalogo(catalogo)) notFound();
+  if (!tienePermiso(catalogo, "promos")) notFound();
   const supabase = await createClient();
 
   const { data } = await supabase

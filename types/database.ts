@@ -104,6 +104,7 @@ export type Database = {
           catalog_id: string
           created_at: string
           created_by: string | null
+          permissions: string[]
           role: string
           user_id: string
         }
@@ -111,6 +112,7 @@ export type Database = {
           catalog_id: string
           created_at?: string
           created_by?: string | null
+          permissions?: string[]
           role?: string
           user_id: string
         }
@@ -118,6 +120,7 @@ export type Database = {
           catalog_id?: string
           created_at?: string
           created_by?: string | null
+          permissions?: string[]
           role?: string
           user_id?: string
         }
@@ -1295,6 +1298,7 @@ export type Database = {
         Returns: Json
       }
       can_edit_catalog: { Args: { cat: string }; Returns: boolean }
+      can_manage_costs: { Args: { cat: string }; Returns: boolean }
       can_manage_prices: { Args: { cat: string }; Returns: boolean }
       catalog_actors: {
         Args: { p_catalog_id: string }
@@ -1432,6 +1436,7 @@ export type Database = {
           variant_count: number
         }[]
       }
+      tiene_permiso: { Args: { cat: string; perm: string }; Returns: boolean }
       vincular_productos_proveedor: {
         Args: {
           p_catalog_id: string

@@ -12,7 +12,7 @@ import {
   Receipt,
   ChevronRight,
 } from "lucide-react";
-import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, esAdminCatalogo, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { facturacionHabilitada } from "@/lib/facturacion/tusfacturas";
 import { CAMBIOS_RECIENTES_DASHBOARD } from "@/lib/constants";
@@ -137,8 +137,8 @@ export default async function CatalogoDashboardPage({
   const accesos = [
     { label: "Nuevo producto", icon: Plus, href: `/panel/${slug}/productos/nuevo`, show: puedeEditar(catalogo) },
     { label: "Nuevo cliente", icon: Users, href: `/panel/${slug}/clientes/nuevo`, show: puedeEditar(catalogo) },
-    { label: "Carga masiva", icon: Upload, href: `/panel/${slug}/importar`, show: admin },
-    { label: "Precios en lote", icon: Tags, href: `/panel/${slug}/precios`, show: admin },
+    { label: "Carga masiva", icon: Upload, href: `/panel/${slug}/importar`, show: tienePermiso(catalogo, "carga_masiva") },
+    { label: "Precios en lote", icon: Tags, href: `/panel/${slug}/precios`, show: tienePermiso(catalogo, "precios_lote") },
   ].filter((a) => a.show);
 
   return (

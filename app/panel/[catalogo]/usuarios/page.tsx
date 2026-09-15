@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { resolverCatalogo, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, tienePermiso, esAdminCatalogo } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { UsersManager, type MiembroCatalogo } from "@/components/users/UsersManager";
 
@@ -12,7 +12,7 @@ export default async function UsuariosPage({
 }) {
   const { catalogo: slug } = await params;
   const catalogo = await resolverCatalogo(slug);
-  if (!esAdminCatalogo(catalogo)) notFound();
+  if (!tienePermiso(catalogo, "usuarios")) notFound();
   const supabase = await createClient();
 
   const {
@@ -21,7 +21,7 @@ export default async function UsuariosPage({
 
   const { data: miembros } = await supabase
     .from("catalog_members")
-    .select("user_id, role")
+    .select("user_id, role, permissions")
     .eq("catalog_id", catalogo.id);
 
   const ids = (miembros ?? []).map((m) => m.user_id);
@@ -36,6 +36,7 @@ export default async function UsuariosPage({
       return {
         user_id: m.user_id,
         role: m.role as MiembroCatalogo["role"],
+        permissions: (m.permissions ?? []) as MiembroCatalogo["permissions"],
         email: p?.email ?? null,
         full_name: p?.full_name ?? null,
       };
@@ -50,7 +51,12 @@ export default async function UsuariosPage({
           Quién tiene acceso a {catalogo.name} y qué puede hacer.
         </p>
       </div>
-      <UsersManager slug={slug} miembros={filas} miUserId={user?.id ?? null} />
+      <UsersManager
+        slug={slug}
+        miembros={filas}
+        miUserId={user?.id ?? null}
+        esAdmin={esAdminCatalogo(catalogo)}
+      />
     </div>
   );
 }

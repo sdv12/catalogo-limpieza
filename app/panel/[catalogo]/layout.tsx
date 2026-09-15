@@ -21,6 +21,7 @@ export default async function CatalogoLayout({
       nombreCatalogo={catalogo.name}
       usuario={perfil.full_name || perfil.email || "Usuario"}
       rol={catalogo.rol}
+      permisos={catalogo.permisos}
       facturacionPendiente={!facturacionHabilitada()}
     >
       {children}

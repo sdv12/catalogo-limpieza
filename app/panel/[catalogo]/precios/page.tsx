@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { resolverCatalogo, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/Card";
 import { TiersManager } from "@/components/prices/TiersManager";
@@ -15,7 +15,7 @@ export default async function PreciosPage({
 }) {
   const { catalogo: slug } = await params;
   const catalogo = await resolverCatalogo(slug);
-  if (!esAdminCatalogo(catalogo)) notFound();
+  if (!tienePermiso(catalogo, "precios_lote")) notFound();
   const supabase = await createClient();
 
   const { data: tiers } = await supabase

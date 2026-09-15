@@ -38,7 +38,7 @@ export function CustomerLedger({
   nextDueDate,
   movimientos,
   puedeCargar,
-  esAdmin,
+  puedeCorregir,
 }: {
   slug: string;
   customerId: string;
@@ -46,7 +46,7 @@ export function CustomerLedger({
   nextDueDate: string | null;
   movimientos: MovimientoFila[];
   puedeCargar: boolean;
-  esAdmin: boolean;
+  puedeCorregir: boolean;
 }) {
   const router = useRouter();
   const [abierto, setAbierto] = useState(false);
@@ -188,7 +188,7 @@ export function CustomerLedger({
                   <th className="py-2 pr-2">Nota</th>
                   <th className="py-2 pr-2">Vencimiento</th>
                   <th className="py-2 pr-2 text-right">Importe</th>
-                  {esAdmin && <th className="w-10 py-2"></th>}
+                  {puedeCorregir && <th className="w-10 py-2"></th>}
                 </tr>
               </thead>
               <tbody>
@@ -214,7 +214,7 @@ export function CustomerLedger({
                       {m.amount > 0 ? "+" : ""}
                       {formatearMoneda(m.amount)}
                     </td>
-                    {esAdmin && (
+                    {puedeCorregir && (
                       <td className="py-1.5">
                         <button
                           type="button"

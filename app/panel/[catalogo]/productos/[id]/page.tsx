@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, History } from "lucide-react";
-import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { opcionesCategoria, tiersDelCatalogo } from "@/lib/catalog-data";
 import { imagenUrl } from "@/lib/storage";
@@ -100,6 +100,7 @@ export default async function EditarProductoPage({
   };
 
   const soloLectura = !puedeEditar(catalogo);
+  const verCostos = tienePermiso(catalogo, "costos");
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
@@ -138,14 +139,16 @@ export default async function EditarProductoPage({
             categorias={categorias}
             tiers={tiers}
             producto={existente}
-            puedeEditarPrecios={esAdminCatalogo(catalogo)}
+            puedeEditarPrecios={puedeEditar(catalogo)}
           />
-          <ProductSuppliers
-            slug={slug}
-            productId={prod.id}
-            vinculos={vinculos}
-            proveedores={proveedores ?? []}
-          />
+          {verCostos && (
+            <ProductSuppliers
+              slug={slug}
+              productId={prod.id}
+              vinculos={vinculos}
+              proveedores={proveedores ?? []}
+            />
+          )}
         </div>
       )}
     </div>

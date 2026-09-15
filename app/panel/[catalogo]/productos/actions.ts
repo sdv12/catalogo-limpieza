@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { exigirEdicion, type ResultadoAccion } from "@/lib/guards";
-import { esAdminCatalogo } from "@/lib/dal";
 import { BUCKET_IMAGENES, type MotivoStock } from "@/lib/constants";
 import {
   productoSchema,
@@ -170,7 +169,9 @@ export async function actualizarProducto(
   input: ProductoInput,
 ): Promise<ResultadoAccion> {
   const catalogo = await exigirEdicion(slug);
-  const puedeGestionarPrecios = esAdminCatalogo(catalogo);
+  // Editar el precio de un producto ya cargado es base para cualquiera con
+  // permiso de edición (RLS: variant_prices ya no exige admin, solo can_edit_catalog).
+  const puedeGestionarPrecios = true;
   const parsed = productoSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0].message };

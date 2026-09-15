@@ -14,12 +14,12 @@ export function ProductsFilters({
   categorias,
   marcas,
   proveedores,
-  admin,
+  verCostos,
 }: {
   categorias: Categoria[];
   marcas: string[];
   proveedores: Proveedor[];
-  admin: boolean;
+  verCostos: boolean;
 }) {
   const searchParams = useSearchParams();
   const activos = CLAVES.filter((k) => searchParams.get(k)).length;
@@ -48,7 +48,7 @@ export function ProductsFilters({
       <div className="flex items-center gap-2 sm:max-w-lg">
         <BuscadorUrl
           placeholder={
-            admin
+            verCostos
               ? "Buscar por nombre, SKU, marca o proveedor…"
               : "Buscar por nombre o SKU…"
           }
@@ -81,7 +81,7 @@ export function ProductsFilters({
           ))}
         </SelectUrl>
 
-        {admin && marcas.length > 0 && (
+        {verCostos && marcas.length > 0 && (
           <SelectUrl param="marca" ariaLabel="Filtrar por marca" className="sm:w-44">
             <option value="">Todas las marcas</option>
             {marcas.map((m) => (
@@ -92,7 +92,7 @@ export function ProductsFilters({
           </SelectUrl>
         )}
 
-        {admin && proveedores.length > 0 && (
+        {verCostos && proveedores.length > 0 && (
           <SelectUrl param="proveedor" ariaLabel="Filtrar por proveedor" className="sm:w-48">
             <option value="">Todos los proveedores</option>
             {proveedores.map((p) => (

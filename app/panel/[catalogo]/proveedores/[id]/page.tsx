@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -38,7 +38,7 @@ export default async function EditarProveedorPage({
 
   const existente: ProveedorExistente = prov;
   const editable = puedeEditar(catalogo);
-  const admin = esAdminCatalogo(catalogo);
+  const verCostos = tienePermiso(catalogo, "costos");
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
@@ -63,7 +63,7 @@ export default async function EditarProveedorPage({
         </p>
       )}
 
-      {!prov.is_deleted && (
+      {!prov.is_deleted && verCostos && (
         <>
           <SupplierProducts
             slug={slug}
@@ -71,7 +71,7 @@ export default async function EditarProveedorPage({
             productos={productos ?? []}
             puedeEditar={editable}
           />
-          {admin && <SupplierCostTool slug={slug} supplierId={id} />}
+          <SupplierCostTool slug={slug} supplierId={id} />
         </>
       )}
     </div>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { exigirAdmin, type ResultadoAccion } from "@/lib/guards";
+import { exigirPermiso, type ResultadoAccion } from "@/lib/guards";
 import { sanitizarBusqueda } from "@/lib/format";
 import { promoSchema, type PromoInput } from "@/lib/validation/promo";
 
@@ -32,7 +32,7 @@ export async function buscarProductosPromo(
   slug: string,
   q: string,
 ): Promise<{ id: string; name: string; brand: string | null }[]> {
-  const catalogo = await exigirAdmin(slug);
+  const catalogo = await exigirPermiso(slug, "promos");
   const t = sanitizarBusqueda(q);
   if (t.length < 2) return [];
   const supabase = await createClient();
@@ -52,7 +52,7 @@ export async function crearPromo(
   slug: string,
   input: PromoInput,
 ): Promise<ResultadoAccion> {
-  const catalogo = await exigirAdmin(slug);
+  const catalogo = await exigirPermiso(slug, "promos");
   const parsed = promoSchema.safeParse(input);
   if (!parsed.success)
     return { ok: false, message: parsed.error.issues[0].message };
@@ -85,7 +85,7 @@ export async function actualizarPromo(
   id: string,
   input: PromoInput,
 ): Promise<ResultadoAccion> {
-  const catalogo = await exigirAdmin(slug);
+  const catalogo = await exigirPermiso(slug, "promos");
   const parsed = promoSchema.safeParse(input);
   if (!parsed.success)
     return { ok: false, message: parsed.error.issues[0].message };
@@ -108,7 +108,7 @@ export async function eliminarPromo(
   slug: string,
   id: string,
 ): Promise<ResultadoAccion> {
-  const catalogo = await exigirAdmin(slug);
+  const catalogo = await exigirPermiso(slug, "promos");
   const supabase = await createClient();
   const { error } = await supabase
     .from("promotions")
@@ -125,7 +125,7 @@ export async function togglePromo(
   id: string,
   activar: boolean,
 ): Promise<ResultadoAccion> {
-  const catalogo = await exigirAdmin(slug);
+  const catalogo = await exigirPermiso(slug, "promos");
   const supabase = await createClient();
 
   const { data: promo } = await supabase
@@ -166,7 +166,7 @@ export async function moverPromo(
   id: string,
   dir: "subir" | "bajar",
 ): Promise<ResultadoAccion> {
-  const catalogo = await exigirAdmin(slug);
+  const catalogo = await exigirPermiso(slug, "promos");
   const supabase = await createClient();
 
   const { data: promo } = await supabase

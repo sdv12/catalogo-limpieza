@@ -7,15 +7,20 @@ export type {
   RolCatalogo,
   RolEfectivo,
   CatalogoAccesible,
+  PermisoCatalogo,
 } from "@/lib/roles";
 export {
   ETIQUETA_ROL,
   puedeEditar,
   esAdminCatalogo,
   puedeEditarPrecios,
+  tienePermiso,
+  PERMISOS_CATALOGO,
+  ETIQUETA_PERMISO,
+  DESCRIPCION_PERMISO,
 } from "@/lib/roles";
 
-import type { RolCatalogo, CatalogoAccesible } from "@/lib/roles";
+import type { RolCatalogo, CatalogoAccesible, PermisoCatalogo } from "@/lib/roles";
 
 export type Perfil = {
   id: string;
@@ -86,29 +91,33 @@ export const catalogosDelUsuario = cache(async (): Promise<CatalogoAccesible[]> 
       .order("name");
     return ((data ?? []) as unknown as FilaCatalogo[])
       .filter((c) => c.is_active)
-      .map((c) => ({ ...c, rol: "superadmin" as const }));
+      .map((c) => ({ ...c, rol: "superadmin" as const, permisos: [] }));
   }
 
   const { data: membresias } = await supabase
     .from("catalog_members")
-    .select("catalog_id, role")
+    .select("catalog_id, role, permissions")
     .eq("user_id", perfil.id);
 
   const filas = (membresias ?? []) as unknown as {
     catalog_id: string;
     role: RolCatalogo;
+    permissions: PermisoCatalogo[];
   }[];
   if (filas.length === 0) return [];
 
-  const roles = new Map(filas.map((f) => [f.catalog_id, f.role]));
+  const membresiaPorCatalogo = new Map(filas.map((f) => [f.catalog_id, f]));
   const { data: cats } = await supabase
     .from("catalogs")
     .select("id, slug, name, logo_path, is_active")
-    .in("id", [...roles.keys()]);
+    .in("id", [...membresiaPorCatalogo.keys()]);
 
   return ((cats ?? []) as unknown as FilaCatalogo[])
     .filter((c) => c.is_active)
-    .map((c) => ({ ...c, rol: roles.get(c.id) as RolCatalogo }))
+    .map((c) => {
+      const m = membresiaPorCatalogo.get(c.id)!;
+      return { ...c, rol: m.role, permisos: m.permissions ?? [] };
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
 });
 

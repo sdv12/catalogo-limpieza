@@ -6,7 +6,7 @@ import { CatalogSidebar } from "@/components/layout/CatalogSidebar";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { Badge } from "@/components/ui/Badge";
-import { ETIQUETA_ROL, type RolEfectivo } from "@/lib/roles";
+import { ETIQUETA_ROL, type RolEfectivo, type PermisoCatalogo } from "@/lib/roles";
 
 export function CatalogShell({
   children,
@@ -14,6 +14,7 @@ export function CatalogShell({
   nombreCatalogo,
   usuario,
   rol,
+  permisos,
   facturacionPendiente,
 }: {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ export function CatalogShell({
   nombreCatalogo: string;
   usuario: string;
   rol: RolEfectivo;
+  permisos: PermisoCatalogo[];
   facturacionPendiente: boolean;
 }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -31,6 +33,7 @@ export function CatalogShell({
         slug={slug}
         nombre={nombreCatalogo}
         rol={rol}
+        permisos={permisos}
         facturacionPendiente={facturacionPendiente}
         abierto={menuAbierto}
         onCerrar={() => setMenuAbierto(false)}

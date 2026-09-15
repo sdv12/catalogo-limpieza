@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { tiersDelCatalogo, vendedoresDelCatalogo } from "@/lib/catalog-data";
 import { Badge } from "@/components/ui/Badge";
@@ -47,7 +47,7 @@ export default async function EditarClientePage({
     credit_limit: Number(cli.credit_limit),
   };
   const editable = puedeEditar(catalogo);
-  const admin = esAdminCatalogo(catalogo);
+  const puedeCorregir = tienePermiso(catalogo, "cuenta_corriente_admin");
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -86,7 +86,7 @@ export default async function EditarClientePage({
             }),
           )}
           puedeCargar={editable}
-          esAdmin={admin}
+          puedeCorregir={puedeCorregir}
         />
       )}
     </div>

@@ -42,14 +42,14 @@ export function ProductsTable({
   slug,
   filas,
   soloLectura,
-  admin,
+  verCostos,
   orden,
   hacerHref,
 }: {
   slug: string;
   filas: Fila[];
   soloLectura: boolean;
-  admin: boolean;
+  verCostos: boolean;
   orden: { sort: string; dir: string };
   hacerHref: (cambios: Record<string, string | undefined>) => string;
 }) {
@@ -99,11 +99,11 @@ export function ProductsTable({
                 <p className="mt-0.5 text-xs text-texto-tenue">
                   {f.base_sku ? `${f.base_sku} · ` : ""}
                   {f.category_name ?? "sin categoría"}
-                  {admin && f.supplier_name ? ` · ${f.supplier_name}` : ""}
+                  {verCostos && f.supplier_name ? ` · ${f.supplier_name}` : ""}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                   <span className="font-medium tabular-nums">{precioTexto(f)}</span>
-                  {admin && f.min_cost != null && (
+                  {verCostos && f.min_cost != null && (
                     <span className="text-xs text-texto-tenue">
                       costo {formatearMoneda(Number(f.min_cost))}
                     </span>
@@ -131,7 +131,7 @@ export function ProductsTable({
                 <Th className="w-12"></Th>
                 <Th>{sortLink("name", "Producto")}</Th>
                 <Th>Categoría</Th>
-                {admin && <Th className="text-right">Costo</Th>}
+                {verCostos && <Th className="text-right">Costo</Th>}
                 <Th className="text-right">Precio</Th>
                 <Th className="text-right">Stock</Th>
                 <Th>{sortLink("status", "Estado")}</Th>
@@ -157,13 +157,13 @@ export function ProductsTable({
                       {Number(f.variant_count) === 1
                         ? "presentación"
                         : "presentaciones"}
-                      {admin && f.supplier_name ? ` · ${f.supplier_name}` : ""}
+                      {verCostos && f.supplier_name ? ` · ${f.supplier_name}` : ""}
                     </div>
                   </Td>
                   <Td className="whitespace-nowrap text-texto-sec">
                     {f.category_name ?? "—"}
                   </Td>
-                  {admin && (
+                  {verCostos && (
                     <Td className="whitespace-nowrap text-right text-texto-sec tabular-nums">
                       {f.min_cost == null
                         ? "—"
