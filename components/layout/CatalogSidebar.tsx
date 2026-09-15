@@ -13,6 +13,7 @@ import {
   Truck,
   Megaphone,
   UserCog,
+  Receipt,
   ChevronLeft,
   X,
 } from "lucide-react";
@@ -26,9 +27,11 @@ type Item = {
   exact?: boolean;
   /** roles que ven este item; si falta, lo ven todos */
   roles?: RolEfectivo[];
+  /** punto de aviso al lado del label (ej: facturación sin configurar) */
+  pendiente?: boolean;
 };
 
-function items(slug: string): Item[] {
+function items(slug: string, facturacionPendiente: boolean): Item[] {
   const b = `/panel/${slug}`;
   const soloAdmin: RolEfectivo[] = ["superadmin", "admin"];
   return [
@@ -39,6 +42,13 @@ function items(slug: string): Item[] {
     { href: `${b}/proveedores`, label: "Proveedores", icon: Truck },
     { href: `${b}/precios`, label: "Precios", icon: Tags, roles: soloAdmin },
     { href: `${b}/promos`, label: "Promos", icon: Megaphone, roles: soloAdmin },
+    {
+      href: `${b}/facturacion`,
+      label: "Facturación",
+      icon: Receipt,
+      roles: soloAdmin,
+      pendiente: facturacionPendiente,
+    },
     { href: `${b}/importar`, label: "Carga masiva", icon: Upload, roles: soloAdmin },
     { href: `${b}/usuarios`, label: "Usuarios", icon: UserCog, roles: soloAdmin },
     { href: `${b}/actividad`, label: "Actividad", icon: History },
@@ -49,17 +59,21 @@ export function CatalogSidebar({
   slug,
   nombre,
   rol,
+  facturacionPendiente,
   abierto,
   onCerrar,
 }: {
   slug: string;
   nombre: string;
   rol: RolEfectivo;
+  facturacionPendiente: boolean;
   abierto: boolean;
   onCerrar: () => void;
 }) {
   const pathname = usePathname();
-  const visibles = items(slug).filter((i) => !i.roles || i.roles.includes(rol));
+  const visibles = items(slug, facturacionPendiente).filter(
+    (i) => !i.roles || i.roles.includes(rol),
+  );
 
   return (
     <>
@@ -91,7 +105,7 @@ export function CatalogSidebar({
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-2">
-          {visibles.map(({ href, label, icon: Icon, exact }) => {
+          {visibles.map(({ href, label, icon: Icon, exact, pendiente }) => {
             const activo = exact
               ? pathname === href
               : pathname === href || pathname.startsWith(`${href}/`);
@@ -109,6 +123,13 @@ export function CatalogSidebar({
               >
                 <Icon size={18} />
                 {label}
+                {pendiente && (
+                  <span
+                    className="ml-auto size-1.5 shrink-0 rounded-full bg-alerta"
+                    title="Pendiente de configurar"
+                    aria-label="Pendiente de configurar"
+                  />
+                )}
               </Link>
             );
           })}

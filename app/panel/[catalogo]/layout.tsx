@@ -1,4 +1,5 @@
 import { obtenerPerfil, resolverCatalogo } from "@/lib/dal";
+import { facturacionHabilitada } from "@/lib/facturacion/tusfacturas";
 import { CatalogShell } from "@/components/layout/CatalogShell";
 
 export default async function CatalogoLayout({
@@ -20,6 +21,7 @@ export default async function CatalogoLayout({
       nombreCatalogo={catalogo.name}
       usuario={perfil.full_name || perfil.email || "Usuario"}
       rol={catalogo.rol}
+      facturacionPendiente={!facturacionHabilitada()}
     >
       {children}
     </CatalogShell>

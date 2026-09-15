@@ -14,12 +14,14 @@ export function CatalogShell({
   nombreCatalogo,
   usuario,
   rol,
+  facturacionPendiente,
 }: {
   children: React.ReactNode;
   slug: string;
   nombreCatalogo: string;
   usuario: string;
   rol: RolEfectivo;
+  facturacionPendiente: boolean;
 }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -29,6 +31,7 @@ export function CatalogShell({
         slug={slug}
         nombre={nombreCatalogo}
         rol={rol}
+        facturacionPendiente={facturacionPendiente}
         abierto={menuAbierto}
         onCerrar={() => setMenuAbierto(false)}
       />

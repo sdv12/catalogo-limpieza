@@ -9,9 +9,12 @@ import {
   Plus,
   Upload,
   Tags,
+  Receipt,
+  ChevronRight,
 } from "lucide-react";
 import { resolverCatalogo, puedeEditar, esAdminCatalogo } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
+import { facturacionHabilitada } from "@/lib/facturacion/tusfacturas";
 import { CAMBIOS_RECIENTES_DASHBOARD } from "@/lib/constants";
 import { formatearMoneda, formatearNumero } from "@/lib/format";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -236,6 +239,26 @@ export default async function CatalogoDashboardPage({
                   </p>
                 </div>
               )}
+            </CardBody>
+          </Card>
+        </Link>
+      )}
+
+      {admin && !facturacionHabilitada() && (
+        <Link href={`/panel/${slug}/facturacion`}>
+          <Card className="border-alerta/40 bg-alerta-suave/40 transition-colors hover:border-alerta">
+            <CardBody className="flex items-center gap-3">
+              <Receipt size={20} className="shrink-0 text-alerta" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-texto">
+                  Facturación electrónica pendiente de configurar
+                </p>
+                <p className="text-xs text-texto-sec">
+                  Conectá TusFacturasAPP para poder emitir comprobantes AFIP/ARCA más
+                  adelante.
+                </p>
+              </div>
+              <ChevronRight size={16} className="shrink-0 text-texto-tenue" />
             </CardBody>
           </Card>
         </Link>
