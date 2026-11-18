@@ -6,6 +6,7 @@ import { CatalogSidebar } from "@/components/layout/CatalogSidebar";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { ArauChat } from "@/components/arau/ArauChat";
+import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/Badge";
 import { ETIQUETA_ROL, type RolEfectivo, type PermisoCatalogo } from "@/lib/roles";
 
@@ -67,6 +68,7 @@ export function CatalogShell({
         </header>
 
         <main className="flex-1 p-4 sm:p-6">{children}</main>
+        <Footer />
       </div>
 
       <ArauChat slug={slug} rol={rol} permisos={permisos} />

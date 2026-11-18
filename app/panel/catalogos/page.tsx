@@ -1,3 +1,4 @@
+import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { exigirSuperadmin, type RolCatalogo } from "@/lib/dal";
@@ -75,6 +76,7 @@ export default async function AdminCatalogosPage() {
             .filter((e): e is string => !!e)}
         />
       </main>
+      <Footer />
     </div>
   );
 }

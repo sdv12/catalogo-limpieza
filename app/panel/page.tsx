@@ -1,3 +1,4 @@
+import { Footer } from "@/components/layout/Footer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Settings, Store } from "lucide-react";
@@ -74,6 +75,7 @@ export default async function SelectorCatalogoPage() {
           </Link>
         )}
       </main>
+      <Footer />
     </div>
   );
 }
