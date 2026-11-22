@@ -80,6 +80,9 @@ export const ETIQUETA_ENTIDAD: Record<string, string> = {
   promotion: "Promo",
   customer_transaction: "Movimiento de cuenta",
   customer_price: "Precio especial de cliente",
+  order: "Pedido",
+  order_item: "Renglón de pedido",
+  channel_key: "Clave de canal",
 };
 
 export const TIPOS_DOC = ["DNI", "CUIT", "CUIL", "CDI", "Pasaporte", "Otro"] as const;

@@ -5,6 +5,13 @@ import { resolverCatalogo, puedeEditar, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { tiersDelCatalogo, vendedoresDelCatalogo } from "@/lib/catalog-data";
 import { Badge } from "@/components/ui/Badge";
+import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
+import { formatearFecha, formatearMoneda } from "@/lib/format";
+import {
+  ETIQUETA_ESTADO_PEDIDO,
+  TONO_ESTADO_PEDIDO,
+  type EstadoPedido,
+} from "@/lib/ventas";
 import {
   CustomerForm,
   type ClienteExistente,
@@ -24,7 +31,14 @@ export default async function EditarClientePage({
   const catalogo = await resolverCatalogo(slug);
   const supabase = await createClient();
 
-  const [{ data: cli }, tiers, vendedores, { data: movimientos }, { data: especiales }] =
+  const [
+    { data: cli },
+    tiers,
+    vendedores,
+    { data: movimientos },
+    { data: especiales },
+    { data: pedidos },
+  ] =
     await Promise.all([
       supabase
         .from("customers")
@@ -51,6 +65,13 @@ export default async function EditarClientePage({
         .eq("customer_id", id)
         .eq("catalog_id", catalogo.id)
         .order("updated_at", { ascending: false }),
+      supabase
+        .from("orders")
+        .select("id, number, status, total, created_at")
+        .eq("customer_id", id)
+        .eq("catalog_id", catalogo.id)
+        .order("created_at", { ascending: false })
+        .limit(10),
     ]);
   if (!cli) notFound();
 
@@ -100,6 +121,45 @@ export default async function EditarClientePage({
           No tenés permiso de edición en este catálogo.
         </p>
       )}
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
+          <CardTitle>Últimos pedidos</CardTitle>
+          {editable && !cli.is_deleted && (
+            <Link
+              href={`/panel/${slug}/ventas/nueva?cliente=${id}`}
+              className="text-sm text-primario hover:underline"
+            >
+              Nueva venta
+            </Link>
+          )}
+        </CardHeader>
+        <CardBody>
+          {(pedidos ?? []).length === 0 ? (
+            <p className="text-sm text-texto-tenue">Todavía no tiene pedidos.</p>
+          ) : (
+            <ul className="divide-y divide-linea text-sm">
+              {(pedidos ?? []).map((o) => (
+                <li key={o.id} className="flex items-center gap-3 py-2">
+                  <Link
+                    href={`/panel/${slug}/ventas/${o.id}`}
+                    className="font-medium tabular-nums text-primario hover:underline"
+                  >
+                    #{o.number}
+                  </Link>
+                  <span className="text-texto-sec">{formatearFecha(o.created_at)}</span>
+                  <Badge tono={TONO_ESTADO_PEDIDO[o.status as EstadoPedido]}>
+                    {ETIQUETA_ESTADO_PEDIDO[o.status as EstadoPedido]}
+                  </Badge>
+                  <span className="ml-auto tabular-nums text-texto">
+                    {formatearMoneda(Number(o.total))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardBody>
+      </Card>
 
       {!cli.is_deleted && (
         <CustomerSpecialPrices

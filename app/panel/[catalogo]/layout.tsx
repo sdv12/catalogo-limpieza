@@ -1,6 +1,7 @@
 import { obtenerPerfil, resolverCatalogo } from "@/lib/dal";
 import { facturacionHabilitada } from "@/lib/facturacion/tusfacturas";
 import { CatalogShell } from "@/components/layout/CatalogShell";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function CatalogoLayout({
   children,
@@ -14,6 +15,12 @@ export default async function CatalogoLayout({
     obtenerPerfil(),
     resolverCatalogo(slug),
   ]);
+  const supabase = await createClient();
+  const { count: pedidosNuevos } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("catalog_id", catalogo.id)
+    .eq("status", "nuevo");
 
   return (
     <CatalogShell
@@ -23,6 +30,7 @@ export default async function CatalogoLayout({
       rol={catalogo.rol}
       permisos={catalogo.permisos}
       facturacionPendiente={!facturacionHabilitada()}
+      pedidosNuevos={pedidosNuevos ?? 0}
     >
       {children}
     </CatalogShell>

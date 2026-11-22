@@ -15,6 +15,7 @@ import {
   UserCog,
   Receipt,
   Sparkles,
+  ShoppingCart,
   ChevronLeft,
   X,
 } from "lucide-react";
@@ -31,6 +32,8 @@ type Item = {
   pendiente?: boolean;
   /** punto rojo: hay algo nuevo sin ver */
   nuevo?: boolean;
+  /** contador (ej: pedidos nuevos sin confirmar) */
+  contador?: number;
 };
 
 function items(
@@ -39,6 +42,7 @@ function items(
   permisos: PermisoCatalogo[],
   facturacionPendiente: boolean,
   novedadesSinVer: boolean,
+  pedidosNuevos: number,
 ): Item[] {
   const b = `/panel/${slug}`;
   const esAdmin = rol === "superadmin" || rol === "admin";
@@ -47,6 +51,7 @@ function items(
 
   const base: Item[] = [
     { href: b, label: "Inicio", icon: LayoutDashboard, exact: true },
+    { href: `${b}/ventas`, label: "Ventas", icon: ShoppingCart, contador: pedidosNuevos },
     { href: `${b}/productos`, label: "Productos", icon: Package },
     { href: `${b}/categorias`, label: "Categorías", icon: FolderTree },
     { href: `${b}/clientes`, label: "Clientes", icon: Users },
@@ -88,6 +93,7 @@ export function CatalogSidebar({
   rol,
   permisos,
   facturacionPendiente,
+  pedidosNuevos,
   abierto,
   onCerrar,
 }: {
@@ -96,12 +102,20 @@ export function CatalogSidebar({
   rol: RolEfectivo;
   permisos: PermisoCatalogo[];
   facturacionPendiente: boolean;
+  pedidosNuevos: number;
   abierto: boolean;
   onCerrar: () => void;
 }) {
   const pathname = usePathname();
   const novedadesSinVer = useNovedadesSinVer();
-  const visibles = items(slug, rol, permisos, facturacionPendiente, novedadesSinVer);
+  const visibles = items(
+    slug,
+    rol,
+    permisos,
+    facturacionPendiente,
+    novedadesSinVer,
+    pedidosNuevos,
+  );
 
   return (
     <>
@@ -133,7 +147,7 @@ export function CatalogSidebar({
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-2">
-          {visibles.map(({ href, label, icon: Icon, exact, pendiente, nuevo }) => {
+          {visibles.map(({ href, label, icon: Icon, exact, pendiente, nuevo, contador }) => {
             const activo = exact
               ? pathname === href
               : pathname === href || pathname.startsWith(`${href}/`);
@@ -157,6 +171,14 @@ export function CatalogSidebar({
                     title="Pendiente de configurar"
                     aria-label="Pendiente de configurar"
                   />
+                )}
+                {!!contador && (
+                  <span
+                    className="ml-auto rounded-full bg-error px-1.5 text-xs font-semibold tabular-nums text-white"
+                    title={`${contador} pedido(s) nuevo(s) sin confirmar`}
+                  >
+                    {contador}
+                  </span>
                 )}
                 {nuevo && (
                   <span

@@ -16,6 +16,20 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    version: "0.11.0",
+    fecha: "2026-11-23",
+    titulo: "Ventas: todos los pedidos en un solo lugar",
+    cambios: [
+      "Nueva sección «Ventas» en el menú: cargás ventas desde el panel y ves los pedidos de las tiendas online y de WhatsApp en la misma bandeja, separados por estado (Nuevo, Confirmado, Preparando, En reparto, Entregado).",
+      "El precio sale solo: el especial del cliente si tiene, si no el de su nivel de precio.",
+      "Al confirmar una venta se descuenta el stock y, si es a cuenta corriente, se carga la deuda con su vencimiento. Si no alcanza el stock o el cliente supera su límite, avisa.",
+      "En una venta podés cambiar el precio de un renglón (con permiso y motivo): vale solo para esa venta o, si lo marcás, queda fijo para el cliente.",
+      "Los pedidos de las tiendas y del bot entran como Nuevo y no tocan stock ni deuda hasta que alguien los confirma. Las claves de cada canal se manejan en «Ventas» → «Canales» (administradores).",
+      "Cada pedido se imprime como comprobante para firmar la entrega (no válido como factura).",
+      "En la ficha del cliente se ven sus últimos pedidos, con un acceso para venderle directo.",
+    ],
+  },
+  {
     version: "0.10.0",
     fecha: "2026-11-22",
     titulo: "Precios especiales por cliente y más control",

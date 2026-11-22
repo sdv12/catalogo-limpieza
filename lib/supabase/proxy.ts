@@ -3,7 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
 
 /** Rutas públicas (no requieren sesión). */
-const RUTAS_PUBLICAS = ["/login", "/auth", "/api/publico", "/api/plantilla-importacion"];
+const RUTAS_PUBLICAS = [
+  "/login",
+  "/auth",
+  "/api/publico",
+  "/api/plantilla-importacion",
+  // pedidos de tiendas/bot: se autentican con la clave del canal, no con sesión
+  "/api/pedidos",
+];
 
 /**
  * Refresca la sesión de Supabase en cada request y protege el panel:

@@ -27,6 +27,7 @@ export type Tema = {
 
 export const CATEGORIAS = [
   "General",
+  "Ventas",
   "Productos",
   "Stock",
   "Precios",
@@ -283,6 +284,81 @@ El ajuste queda registrado en "Actividad".`,
     claves: ["el ajuste no cambia el stock", "ingresa una cantidad", "error stock"],
     respuesta: `- "Ingresá una cantidad": falta el número.
 - "El ajuste no cambia el stock": el resultado da igual al stock actual (por ejemplo, elegiste "fijar" con el mismo número). Revisá si querías sumar o restar.`,
+  },
+
+  // ───────────────────────── Ventas
+  {
+    id: "venta-nueva",
+    categoria: "Ventas",
+    titulo: "Cargar una venta",
+    claves: ["venta", "vender", "nueva venta", "cargar venta", "pedido nuevo", "cargar pedido", "armar pedido", "cargo venta", "registro venta", "mostrador"],
+    requiere: "editar",
+    respuesta: `1. Andá a "Ventas" → "Nueva venta" (o desde la ficha del cliente, "Nueva venta").
+2. Elegí el cliente. Sin cliente es consumidor final y solo puede ser de contado.
+3. Elegí la condición de pago: Contado o Cuenta corriente (con fecha de vencimiento).
+4. Agregá productos con el buscador (nombre, marca, SKU o código de barras) y poné las cantidades. El precio sale solo: el especial del cliente si tiene, si no el de su nivel.
+5. "Confirmar venta" descuenta el stock y, si es a cuenta corriente, carga la deuda. "Guardar como Nuevo" lo deja pendiente para confirmar después.`,
+    relacionados: ["venta-estados", "venta-precio", "venta-stock"],
+  },
+  {
+    id: "venta-estados",
+    categoria: "Ventas",
+    titulo: "Estados de un pedido (confirmar, preparar, entregar)",
+    claves: ["estado pedido", "confirmar pedido", "preparando", "en reparto", "entregado", "pedido entregado", "paso entregado", "despachar", "entregar pedido", "seguimiento", "bandeja"],
+    requiere: "editar",
+    respuesta: `Un pedido pasa por: Nuevo → Confirmado → Preparando → En reparto → Entregado.
+- Nuevo: todavía no tocó stock ni deuda. Se puede editar.
+- Al confirmarlo se descuenta el stock y se carga la deuda si es a cuenta corriente. Ya no se edita.
+- Desde el pedido avanzás de estado con los botones (podés saltar directo a Entregado si es de mostrador).
+En "Ventas" las pestañas muestran cuántos hay en cada estado; el número rojo son los Nuevos sin confirmar.`,
+    relacionados: ["venta-cancelar", "venta-canales"],
+  },
+  {
+    id: "venta-precio",
+    categoria: "Ventas",
+    titulo: "Cambiar el precio en una venta (único o fijo para el cliente)",
+    claves: ["cambiar precio venta", "descuento", "precio en la venta", "rebaja", "precio solo esta venta", "precio unico venta", "dejar precio fijo", "bonificar", "descuento venta", "solo esta venta"],
+    requiere: "precios_especiales",
+    respuesta: `1. En la venta, en el renglón tocá "Cambiar" al lado del precio.
+2. Poné el precio nuevo y el motivo (obligatorio).
+3. Elegí:
+- Sin marcar nada: el precio vale SOLO para esta venta.
+- Marcando "Dejar este precio fijo para el cliente": al confirmar queda como precio especial del cliente para las próximas compras.
+Por debajo del costo solo lo puede hacer un administrador. Todo queda en "Actividad".`,
+    relacionados: ["precio-especial", "venta-nueva"],
+  },
+  {
+    id: "venta-stock",
+    categoria: "Ventas",
+    titulo: "No me deja confirmar: no hay stock o supera el límite",
+    claves: ["no hay stock", "stock suficiente", "no me deja confirmar", "limite cuenta corriente", "supera el limite", "limite de credito", "no alcanza"],
+    respuesta: `- "No hay stock suficiente": el stock no alcanza para lo que pide. Guardalo como Nuevo y confirmalo cuando entre la mercadería (cargala con un ajuste de stock "Ingreso").
+- "Supera su límite de cuenta corriente": con esa venta el cliente pasa su límite. Solo un administrador puede confirmarla, o cobrale antes y bajá su saldo.`,
+    relacionados: ["stock-ajustar", "cc-cargar"],
+  },
+  {
+    id: "venta-cancelar",
+    categoria: "Ventas",
+    titulo: "Cancelar un pedido",
+    claves: ["cancelar pedido", "cancelo pedido", "cancelar", "cancelo", "anular pedido", "anular venta", "borrar pedido", "se arrepintio", "pedido duplicado"],
+    requiere: "editar",
+    respuesta: `1. Entrá al pedido y tocá "Cancelar pedido".
+2. Escribí el motivo y confirmá.
+- Un pedido Nuevo lo cancela cualquiera que pueda vender.
+- Uno ya confirmado lo cancela solo un administrador: se devuelve el stock y se anula el cargo de la cuenta corriente.
+- Un pedido Entregado no se cancela.`,
+    relacionados: ["venta-estados"],
+  },
+  {
+    id: "venta-canales",
+    categoria: "Ventas",
+    titulo: "Pedidos de la tienda online y de WhatsApp",
+    claves: ["tienda online", "pedido web", "whatsapp", "bot", "pedidos de la tienda", "canal", "canales", "clave", "api pedidos", "n8n"],
+    respuesta: `Los pedidos de las tiendas y del bot de WhatsApp caen en "Ventas" como Nuevo, junto con los del panel.
+- Llegan al precio general. Si es un cliente cargado, editá el pedido, elegí el cliente y los precios se recalculan con su nivel.
+- No tocan stock ni deuda hasta que alguien los confirma.
+- Las claves de cada canal las crea un administrador en "Ventas" → "Canales". Si una tienda deja de cargar pedidos, revisá que su clave esté activa.`,
+    relacionados: ["venta-estados"],
   },
 
   // ───────────────────────── Precios

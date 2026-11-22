@@ -1,5 +1,14 @@
 import { formatearMoneda, formatearNumero } from "@/lib/format";
 import { ETIQUETA_ESTADO, ETIQUETA_UNIDAD } from "@/lib/constants";
+import {
+  ETIQUETA_CANAL,
+  ETIQUETA_CONDICION_PAGO,
+  ETIQUETA_ESTADO_PEDIDO,
+  ETIQUETA_ORIGEN_PRECIO,
+  type CanalPedido,
+  type CondicionPago,
+  type EstadoPedido,
+} from "@/lib/ventas";
 
 export type CambioCampo = { field: string; old: unknown; new: unknown };
 
@@ -41,6 +50,25 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   amount: "Importe",
   due_date: "Fecha de cobro",
   reason: "Motivo",
+  number: "N° de pedido",
+  channel: "Canal",
+  payment_terms: "Condición de pago",
+  total: "Total",
+  quantity: "Cantidad",
+  unit_price: "Precio unitario",
+  list_price: "Precio de lista",
+  price_source: "Origen del precio",
+  price_reason: "Motivo del precio",
+  save_special: "Precio fijo para el cliente",
+  line_total: "Subtotal",
+  cancel_reason: "Motivo de cancelación",
+  confirmed_at: "Confirmado",
+  delivered_at: "Entregado",
+  cancelled_at: "Cancelado",
+  contact_name: "Contacto",
+  contact_phone: "Teléfono de contacto",
+  delivery_address: "Dirección de entrega",
+  order_id: "Pedido",
   ends_on: "Vence",
   customer_id: "Cliente",
   balance: "Saldo",
@@ -97,7 +125,7 @@ export function formatearValorAuditoria(
 ): string {
   if (v == null || v === "") return "—";
   if (typeof v === "boolean") return v ? "Sí" : "No";
-  if (["price", "amount", "balance", "credit_limit", "cost", "discount_value"].includes(field) )
+  if (["price", "amount", "balance", "credit_limit", "cost", "discount_value", "total", "unit_price", "list_price", "line_total", "unit_cost"].includes(field) )
     return field === "discount_value" ? formatearNumero(Number(v)) : formatearMoneda(Number(v));
   if (["stock", "min_stock", "size_value", "sort_order", "position"].includes(field))
     return formatearNumero(Number(v));
@@ -114,7 +142,16 @@ export function formatearValorAuditoria(
   }
   if (field === "assigned_seller") return "otro vendedor";
   if (field === "status")
-    return ETIQUETA_ESTADO[v as "active" | "inactive"] ?? String(v);
+    return (
+      ETIQUETA_ESTADO[v as "active" | "inactive"] ??
+      ETIQUETA_ESTADO_PEDIDO[v as EstadoPedido] ??
+      String(v)
+    );
+  if (field === "payment_terms")
+    return ETIQUETA_CONDICION_PAGO[v as CondicionPago] ?? String(v);
+  if (field === "channel") return ETIQUETA_CANAL[v as CanalPedido] ?? String(v);
+  if (field === "price_source") return ETIQUETA_ORIGEN_PRECIO[String(v)] ?? String(v);
+  if (field === "order_id") return "un pedido";
   if (field === "size_unit")
     return ETIQUETA_UNIDAD[v as keyof typeof ETIQUETA_UNIDAD] ?? String(v);
   if (["primary_category_id", "parent_id", "category_id"].includes(field))

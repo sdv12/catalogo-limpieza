@@ -227,6 +227,59 @@ export type Database = {
           },
         ]
       }
+      channel_keys: {
+        Row: {
+          catalog_id: string
+          channel: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          catalog_id: string
+          channel: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          catalog_id?: string
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_keys_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_prices: {
         Row: {
           catalog_id: string
@@ -293,6 +346,7 @@ export type Database = {
       }
       customer_transactions: {
         Row: {
+          order_id: string | null
           amount: number
           catalog_id: string
           created_at: string
@@ -309,6 +363,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          order_id?: string | null
           amount: number
           catalog_id: string
           created_at?: string
@@ -325,6 +380,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          order_id?: string | null
           amount?: number
           catalog_id?: string
           created_at?: string
@@ -554,6 +610,186 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "catalogs"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          catalog_id: string
+          created_at: string
+          id: string
+          line_total: number
+          list_price: number | null
+          order_id: string
+          position: number
+          price_reason: string | null
+          price_source: string
+          product_name: string
+          quantity: number
+          save_special: boolean
+          sku: string
+          unit_cost: number | null
+          unit_price: number
+          variant_id: string
+          variant_name: string
+        }
+        Insert: {
+          catalog_id: string
+          created_at?: string
+          id?: string
+          line_total: number
+          list_price?: number | null
+          order_id: string
+          position?: number
+          price_reason?: string | null
+          price_source: string
+          product_name: string
+          quantity: number
+          save_special?: boolean
+          sku: string
+          unit_cost?: number | null
+          unit_price: number
+          variant_id: string
+          variant_name: string
+        }
+        Update: {
+          catalog_id?: string
+          created_at?: string
+          id?: string
+          line_total?: number
+          list_price?: number | null
+          order_id?: string
+          position?: number
+          price_reason?: string | null
+          price_source?: string
+          product_name?: string
+          quantity?: number
+          save_special?: boolean
+          sku?: string
+          unit_cost?: number | null
+          unit_price?: number
+          variant_id?: string
+          variant_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_catalog_id_fkey"
+            columns: ["order_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id", "catalog_id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_catalog_id_fkey"
+            columns: ["variant_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          cancel_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          catalog_id: string
+          channel: string
+          channel_name: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string | null
+          customer_id: string | null
+          delivered_at: string | null
+          delivered_by: string | null
+          delivery_address: string | null
+          due_date: string | null
+          external_ref: string | null
+          id: string
+          notes: string | null
+          number: number
+          payment_terms: string
+          status: string
+          total: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          catalog_id: string
+          channel?: string
+          channel_name?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivered_by?: string | null
+          delivery_address?: string | null
+          due_date?: string | null
+          external_ref?: string | null
+          id?: string
+          notes?: string | null
+          number?: number
+          payment_terms?: string
+          status?: string
+          total?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          catalog_id?: string
+          channel?: string
+          channel_name?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string | null
+          delivered_at?: string | null
+          delivered_by?: string | null
+          delivery_address?: string | null
+          due_date?: string | null
+          external_ref?: string | null
+          id?: string
+          notes?: string | null
+          number?: number
+          payment_terms?: string
+          status?: string
+          total?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_catalog_id_fkey"
+            columns: ["customer_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id", "catalog_id"]
           },
         ]
       }
@@ -1067,6 +1303,7 @@ export type Database = {
       }
       stock_movements: {
         Row: {
+          order_id: string | null
           batch_id: string | null
           catalog_id: string
           created_at: string
@@ -1080,6 +1317,7 @@ export type Database = {
           variant_id: string
         }
         Insert: {
+          order_id?: string | null
           batch_id?: string | null
           catalog_id: string
           created_at?: string
@@ -1093,6 +1331,7 @@ export type Database = {
           variant_id: string
         }
         Update: {
+          order_id?: string | null
           batch_id?: string | null
           catalog_id?: string
           created_at?: string
@@ -1373,6 +1612,26 @@ export type Database = {
       }
       catalog_stats: { Args: { p_catalog_id: string }; Returns: Json }
       category_path: { Args: { p_category_id: string }; Returns: string }
+      avanzar_pedido: { Args: { p_order: string; p_status: string }; Returns: undefined }
+      cancelar_pedido: { Args: { p_order: string; p_reason: string }; Returns: undefined }
+      confirmar_pedido: { Args: { p_order: string }; Returns: undefined }
+      crear_pedido_externo: { Args: { p_key_id: string; p_payload: Json }; Returns: Json }
+      guardar_pedido: {
+        Args: {
+          p_catalog: string
+          p_customer: string | null
+          p_due_date: string | null
+          p_items: Json
+          p_notes: string | null
+          p_order: string | null
+          p_payment: string
+        }
+        Returns: string
+      }
+      precio_de_lista: {
+        Args: { p_customer: string | null; p_variant: string }
+        Returns: { price: number | null; source: string }[]
+      }
       customers_por_cobrar: {
         Args: { p_catalog_id: string; p_dias_antes?: number }
         Returns: {

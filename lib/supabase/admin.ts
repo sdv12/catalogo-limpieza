@@ -4,8 +4,9 @@ import type { Database } from "@/types/database";
 
 /**
  * Cliente con service_role. Salta RLS y NO registra auth.uid() en la
- * auditoría. Uso EXCLUSIVO: crear usuarios de Auth (alta de administradores).
- * Nunca para escribir el catálogo.
+ * auditoría. Usos permitidos: crear usuarios de Auth (alta de usuarios) y
+ * /api/pedidos (validar la clave del canal y llamar a crear_pedido_externo).
+ * Nunca para escribir el catálogo directo.
  */
 export function createAdminClient() {
   return createClient<Database>(
