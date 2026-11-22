@@ -10,6 +10,10 @@ import {
   type ClienteExistente,
 } from "@/components/customers/CustomerForm";
 import { CustomerLedger, type MovimientoFila } from "@/components/customers/CustomerLedger";
+import {
+  CustomerSpecialPrices,
+  type PrecioEspecialFila,
+} from "@/components/customers/CustomerSpecialPrices";
 
 export default async function EditarClientePage({
   params,
@@ -20,7 +24,7 @@ export default async function EditarClientePage({
   const catalogo = await resolverCatalogo(slug);
   const supabase = await createClient();
 
-  const [{ data: cli }, tiers, vendedores, { data: movimientos }] =
+  const [{ data: cli }, tiers, vendedores, { data: movimientos }, { data: especiales }] =
     await Promise.all([
       supabase
         .from("customers")
@@ -39,6 +43,14 @@ export default async function EditarClientePage({
         .eq("is_deleted", false)
         .order("created_at", { ascending: false })
         .limit(50),
+      supabase
+        .from("customer_prices")
+        .select(
+          "id, price, reason, ends_on, updated_at, variant:product_variants!inner(id, name, sku, product:products!inner(name), variant_prices(price, price_tier_id))",
+        )
+        .eq("customer_id", id)
+        .eq("catalog_id", catalogo.id)
+        .order("updated_at", { ascending: false }),
     ]);
   if (!cli) notFound();
 
@@ -48,6 +60,23 @@ export default async function EditarClientePage({
   };
   const editable = puedeEditar(catalogo);
   const puedeCorregir = tienePermiso(catalogo, "cuenta_corriente_admin");
+
+  // "Precio general" del cliente = su nivel, o el nivel por defecto del catálogo.
+  const nivel =
+    tiers.find((t) => t.id === cli.price_tier_id) ?? tiers.find((t) => t.is_default) ?? null;
+  const preciosEspeciales: PrecioEspecialFila[] = (especiales ?? []).map((e) => ({
+    id: e.id,
+    variantId: e.variant.id,
+    producto: e.variant.product.name,
+    presentacion: e.variant.name,
+    sku: e.variant.sku,
+    precioGeneral:
+      e.variant.variant_prices.find((p) => p.price_tier_id === nivel?.id)?.price ?? null,
+    precio: Number(e.price),
+    motivo: e.reason,
+    vence: e.ends_on,
+    actualizado: e.updated_at,
+  }));
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -65,11 +94,21 @@ export default async function EditarClientePage({
       </div>
 
       {editable ? (
-        <CustomerForm slug={slug} tiers={tiers} vendedores={vendedores} cliente={existente} />
+        <CustomerForm slug={slug} tiers={tiers} vendedores={vendedores} cliente={existente} puedeCambiarNivel={tienePermiso(catalogo, "precios_lote")} />
       ) : (
         <p className="text-sm text-texto-sec">
           No tenés permiso de edición en este catálogo.
         </p>
+      )}
+
+      {!cli.is_deleted && (
+        <CustomerSpecialPrices
+          slug={slug}
+          customerId={id}
+          nivel={nivel?.name ?? null}
+          precios={preciosEspeciales}
+          puedeEditar={tienePermiso(catalogo, "precios_especiales")}
+        />
       )}
 
       {!cli.is_deleted && (

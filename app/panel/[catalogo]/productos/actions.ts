@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { exigirEdicion, type ResultadoAccion } from "@/lib/guards";
+import { tienePermiso } from "@/lib/roles";
 import { BUCKET_IMAGENES, type MotivoStock } from "@/lib/constants";
 import {
   productoSchema,
@@ -169,9 +170,10 @@ export async function actualizarProducto(
   input: ProductoInput,
 ): Promise<ResultadoAccion> {
   const catalogo = await exigirEdicion(slug);
-  // Editar el precio de un producto ya cargado es base para cualquiera con
-  // permiso de edición (RLS: variant_prices ya no exige admin, solo can_edit_catalog).
-  const puedeGestionarPrecios = true;
+  // Modificar el precio de una presentación YA cargada exige el permiso de
+  // precios (RLS: variant_prices update/delete → can_manage_prices). Ponerle
+  // precio a una presentación nueva sigue siendo base de cualquier editor.
+  const puedeGestionarPrecios = tienePermiso(catalogo, "precios_lote");
   const parsed = productoSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0].message };
@@ -262,6 +264,7 @@ export async function actualizarProducto(
 
   for (const [i, v] of dato.variants.entries()) {
     let variantId = v.id;
+    const esNueva = !(variantId && idsActuales.has(variantId));
     const sku = skuDeVariante(v, dato);
     if (variantId && idsActuales.has(variantId)) {
       const { error } = await supabase
@@ -317,8 +320,9 @@ export async function actualizarProducto(
       variantId = creada.id;
     }
 
-    // precios de la variante: reconciliar (solo si el usuario puede tocar precios)
-    if (!puedeGestionarPrecios) continue;
+    // precios de la variante: reconciliar (solo si el usuario puede tocar
+    // precios, o si la presentación es nueva y todavía no tiene ninguno)
+    if (!puedeGestionarPrecios && !esNueva) continue;
     const deseados = preciosValidos(v.prices);
     const deseadosMap = new Map(deseados.map((p) => [p.tierId, p.price]));
     const { data: preciosActuales } = await supabase

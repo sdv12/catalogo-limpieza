@@ -37,7 +37,7 @@ export type ClienteExistente = {
   is_active: boolean;
 };
 
-type Tier = { id: string; name: string };
+type Tier = { id: string; name: string; is_default?: boolean };
 type Vendedor = { id: string; label: string };
 
 export function CustomerForm({
@@ -45,11 +45,14 @@ export function CustomerForm({
   tiers,
   vendedores,
   cliente,
+  puedeCambiarNivel = true,
 }: {
   slug: string;
   tiers: Tier[];
   vendedores: Vendedor[];
   cliente?: ClienteExistente;
+  /** Sin el permiso de precios, el nivel solo puede quedar en el general. */
+  puedeCambiarNivel?: boolean;
 }) {
   const router = useRouter();
   const edicion = !!cliente;
@@ -64,7 +67,9 @@ export function CustomerForm({
     address: cliente?.address ?? "",
     city: cliente?.city ?? "",
     province: cliente?.province ?? "",
-    price_tier_id: cliente?.price_tier_id ?? "",
+    price_tier_id:
+      cliente?.price_tier_id ??
+      (puedeCambiarNivel ? "" : (tiers.find((t) => t.is_default)?.id ?? "")),
     assigned_seller: cliente?.assigned_seller ?? "",
     credit_limit: cliente?.credit_limit != null ? String(cliente.credit_limit) : "0",
     notes: cliente?.notes ?? "",
@@ -235,6 +240,12 @@ export function CustomerForm({
               <Select
                 value={f.price_tier_id}
                 onChange={(e) => set("price_tier_id", e.target.value)}
+                disabled={!puedeCambiarNivel}
+                title={
+                  puedeCambiarNivel
+                    ? undefined
+                    : "Cambiar el nivel de precio requiere el permiso de precios"
+                }
               >
                 <option value="">Sin definir</option>
                 {tiers.map((t) => (

@@ -80,7 +80,7 @@ export async function vendedoresDelCatalogo(supabase: DB, catalogId: string) {
 export async function tiersDelCatalogo(supabase: DB, catalogId: string) {
   const { data } = await supabase
     .from("price_tiers")
-    .select("id, name, code, is_active")
+    .select("id, name, code, is_active, is_default")
     .eq("catalog_id", catalogId)
     .order("sort_order");
   return (data ?? []).filter((t) => t.is_active);

@@ -40,6 +40,9 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   kind: "Tipo",
   amount: "Importe",
   due_date: "Fecha de cobro",
+  reason: "Motivo",
+  ends_on: "Vence",
+  customer_id: "Cliente",
   balance: "Saldo",
   next_due_date: "Próximo vencimiento",
   assigned_seller: "Vendedor asignado",
@@ -119,6 +122,7 @@ export function formatearValorAuditoria(
   if (field === "price_tier_id")
     return maps?.tiers?.get(String(v)) ?? "otro nivel";
   if (field === "variant_id") return "otra presentación";
+  if (field === "customer_id") return "otro cliente";
   if (field === "role") {
     return (
       { admin: "Administrador", empleado: "Empleado", viewer: "Solo lectura" }[

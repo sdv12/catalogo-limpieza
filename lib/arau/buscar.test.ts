@@ -24,6 +24,12 @@ describe("ARAU — búsqueda de temas", () => {
     ["qué clientes están en mora", "cc-deudores"],
     ["poner un producto en oferta", "promos"],
     ["pantalla en blanco, no anda", "error-general"],
+    ["qué hay de nuevo en el panel", "novedades"],
+    ["quiero darle un precio especial a un cliente", "precio-especial"],
+    ["precio distinto solo para un cliente", "precio-especial"],
+    ["cómo cambio el precio de un producto", "precio-uno"],
+    ["necesito más niveles de precio, mayorista 2", "precio-niveles"],
+    ["qué es el puntito rojo en novedades", "novedades"],
   ])("%s → %s", (q, id) => {
     expect(primero(q)).toBe(id);
   });

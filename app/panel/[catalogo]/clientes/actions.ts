@@ -3,13 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { exigirEdicion, exigirPermiso, type ResultadoAccion } from "@/lib/guards";
+import { tienePermiso } from "@/lib/roles";
 import { customerSchema, type CustomerInput } from "@/lib/validation/customer";
 import { movimientoSchema, type MovimientoInput } from "@/lib/validation/ledger";
+import { TIPOS_MOVIMIENTO_BASE } from "@/lib/constants";
 
 function rev(slug: string, id?: string) {
   revalidatePath(`/panel/${slug}/clientes`);
   if (id) revalidatePath(`/panel/${slug}/clientes/${id}`);
 }
+
+const sinPermisoNivel =
+  "Asignar o cambiar el nivel de precio de un cliente requiere el permiso de precios.";
 
 const dupMsg =
   "Ya existe un cliente activo con ese tipo y número de documento.";
@@ -27,6 +32,16 @@ export async function crearCliente(
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Sin permiso de precios, el cliente nuevo queda sin nivel o en el general.
+  if (parsed.data.price_tier_id && !tienePermiso(catalogo, "precios_lote")) {
+    const { data: tier } = await supabase
+      .from("price_tiers")
+      .select("is_default")
+      .eq("id", parsed.data.price_tier_id)
+      .maybeSingle();
+    if (!tier?.is_default) return { ok: false, message: sinPermisoNivel };
+  }
 
   const { data, error } = await supabase
     .from("customers")
@@ -66,9 +81,15 @@ export async function actualizarCliente(
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Sin permiso de precios, el nivel del cliente no se toca (se ignora).
+  const { price_tier_id, ...resto } = parsed.data;
+  const cambios = tienePermiso(catalogo, "precios_lote")
+    ? { ...resto, price_tier_id }
+    : resto;
+
   const { error } = await supabase
     .from("customers")
-    .update({ ...parsed.data, updated_by: user!.id })
+    .update({ ...cambios, updated_by: user!.id })
     .eq("id", id)
     .eq("catalog_id", catalogo.id);
 
@@ -133,6 +154,17 @@ export async function agregarMovimiento(
   const parsed = movimientoSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0].message };
+  }
+  // Ajustes y notas pueden borrar deuda: requieren el permiso de cuenta corriente.
+  if (
+    !TIPOS_MOVIMIENTO_BASE.includes(parsed.data.kind) &&
+    !tienePermiso(catalogo, "cuenta_corriente_admin")
+  ) {
+    return {
+      ok: false,
+      message:
+        "Ajustes y notas de crédito/débito requieren el permiso de cuenta corriente. Pedíselo a un administrador.",
+    };
   }
   const supabase = await createClient();
   const {

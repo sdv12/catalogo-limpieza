@@ -227,6 +227,70 @@ export type Database = {
           },
         ]
       }
+      customer_prices: {
+        Row: {
+          catalog_id: string
+          created_at: string
+          created_by: string | null
+          customer_id: string
+          ends_on: string | null
+          id: string
+          price: number
+          reason: string
+          updated_at: string
+          updated_by: string | null
+          variant_id: string
+        }
+        Insert: {
+          catalog_id: string
+          created_at?: string
+          created_by?: string | null
+          customer_id: string
+          ends_on?: string | null
+          id?: string
+          price: number
+          reason: string
+          updated_at?: string
+          updated_by?: string | null
+          variant_id: string
+        }
+        Update: {
+          catalog_id?: string
+          created_at?: string
+          created_by?: string | null
+          customer_id?: string
+          ends_on?: string | null
+          id?: string
+          price?: number
+          reason?: string
+          updated_at?: string
+          updated_by?: string | null
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_prices_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_prices_customer_id_catalog_id_fkey"
+            columns: ["customer_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id", "catalog_id"]
+          },
+          {
+            foreignKeyName: "customer_prices_variant_id_catalog_id_fkey"
+            columns: ["variant_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
       customer_transactions: {
         Row: {
           amount: number

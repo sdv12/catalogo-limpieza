@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { catalogosDelUsuario, esAdminCatalogo } from "@/lib/dal";
 import { emitirComprobanteInputSchema } from "@/lib/validation/facturacion";
 import {
   emitirComprobante,
@@ -12,12 +13,9 @@ import {
  * Emite un comprobante fiscal (factura / nota de crédito / nota de débito)
  * vía TusFacturasAPP. Server-side: las credenciales nunca viajan al cliente.
  *
- * Auth: exige sesión del panel (cualquier usuario autenticado). Esto es
- * infraestructura previa al módulo de Ventas — todavía no hay un `catalog_id`
- * en el payload para pedir `exigirAdmin(slug)`. Cuando exista Ventas, esta
- * ruta debería recibir el slug del catálogo y exigir admin de ESE catálogo
- * antes de emitir (facturar es una acción sensible: genera un documento
- * fiscal real que no se puede editar ni borrar, solo anular con NC).
+ * Auth: exige sesión y ser administrador del catálogo indicado en
+ * `?catalogo=<slug>`. Facturar es una acción sensible: genera un documento
+ * fiscal real que no se puede editar ni borrar, solo anular con NC.
  */
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -25,6 +23,18 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  const slug = req.nextUrl.searchParams.get("catalogo");
+  if (!slug) {
+    return NextResponse.json({ error: "Falta el parámetro catalogo" }, { status: 400 });
+  }
+  const catalogo = (await catalogosDelUsuario()).find((c) => c.slug === slug);
+  if (!catalogo || !esAdminCatalogo(catalogo)) {
+    return NextResponse.json(
+      { error: "Emitir comprobantes es solo para administradores del catálogo" },
+      { status: 403 },
+    );
+  }
 
   if (!facturacionHabilitada()) {
     return NextResponse.json(

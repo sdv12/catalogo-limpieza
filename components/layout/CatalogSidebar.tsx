@@ -14,10 +14,12 @@ import {
   Megaphone,
   UserCog,
   Receipt,
+  Sparkles,
   ChevronLeft,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useNovedadesSinVer } from "@/components/novedades/visto";
 import type { RolEfectivo, PermisoCatalogo } from "@/lib/roles";
 
 type Item = {
@@ -27,6 +29,8 @@ type Item = {
   exact?: boolean;
   /** punto de aviso al lado del label (ej: facturación sin configurar) */
   pendiente?: boolean;
+  /** punto rojo: hay algo nuevo sin ver */
+  nuevo?: boolean;
 };
 
 function items(
@@ -34,6 +38,7 @@ function items(
   rol: RolEfectivo,
   permisos: PermisoCatalogo[],
   facturacionPendiente: boolean,
+  novedadesSinVer: boolean,
 ): Item[] {
   const b = `/panel/${slug}`;
   const esAdmin = rol === "superadmin" || rol === "admin";
@@ -68,6 +73,12 @@ function items(
     base.push({ href: `${b}/usuarios`, label: "Usuarios", icon: UserCog });
   }
   base.push({ href: `${b}/actividad`, label: "Actividad", icon: History });
+  base.push({
+    href: `${b}/novedades`,
+    label: "Novedades",
+    icon: Sparkles,
+    nuevo: novedadesSinVer,
+  });
   return base;
 }
 
@@ -89,7 +100,8 @@ export function CatalogSidebar({
   onCerrar: () => void;
 }) {
   const pathname = usePathname();
-  const visibles = items(slug, rol, permisos, facturacionPendiente);
+  const novedadesSinVer = useNovedadesSinVer();
+  const visibles = items(slug, rol, permisos, facturacionPendiente, novedadesSinVer);
 
   return (
     <>
@@ -121,7 +133,7 @@ export function CatalogSidebar({
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-2">
-          {visibles.map(({ href, label, icon: Icon, exact, pendiente }) => {
+          {visibles.map(({ href, label, icon: Icon, exact, pendiente, nuevo }) => {
             const activo = exact
               ? pathname === href
               : pathname === href || pathname.startsWith(`${href}/`);
@@ -144,6 +156,13 @@ export function CatalogSidebar({
                     className="ml-auto size-1.5 shrink-0 rounded-full bg-alerta"
                     title="Pendiente de configurar"
                     aria-label="Pendiente de configurar"
+                  />
+                )}
+                {nuevo && (
+                  <span
+                    className="ml-auto size-2 shrink-0 rounded-full bg-error"
+                    title="Hay novedades sin ver"
+                    aria-label="Hay novedades sin ver"
                   />
                 )}
               </Link>

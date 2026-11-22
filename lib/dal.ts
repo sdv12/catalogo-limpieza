@@ -13,7 +13,6 @@ export {
   ETIQUETA_ROL,
   puedeEditar,
   esAdminCatalogo,
-  puedeEditarPrecios,
   tienePermiso,
   PERMISOS_CATALOGO,
   ETIQUETA_PERMISO,

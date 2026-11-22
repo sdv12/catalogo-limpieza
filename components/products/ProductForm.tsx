@@ -19,6 +19,7 @@ import { StockAdjustDialog } from "@/components/products/StockAdjustDialog";
 import { UNIDADES_MEDIDA, ETIQUETA_UNIDAD, ESTADOS_PRODUCTO, ETIQUETA_ESTADO } from "@/lib/constants";
 import { parsearNumero, type ProductoInput } from "@/lib/validation/product";
 import { formatearNumero } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import {
   crearProducto,
   actualizarProducto,
@@ -113,8 +114,12 @@ export function ProductForm({
 }) {
   const router = useRouter();
   const edicion = !!producto;
-  /** Al editar un producto existente, solo el admin puede tocar los precios. */
-  const preciosBloqueados = edicion && !puedeEditarPrecios;
+  /**
+   * Sin el permiso de precios, los precios de una presentación YA guardada
+   * quedan de solo lectura. A una presentación nueva sí se le pone precio.
+   */
+  const preciosBloqueadosDe = (v: { id?: string }) =>
+    edicion && !puedeEditarPrecios && !!v.id;
 
   const [name, setName] = useState(producto?.name ?? "");
   const [description, setDescription] = useState(producto?.description ?? "");
@@ -242,6 +247,26 @@ export function ProductForm({
       return;
     }
     setErrores([]);
+    // Un precio bajo costo casi siempre es un error de tipeo (ej: poner 47
+    // pensando en 47%). Se puede guardar, pero hay que confirmarlo.
+    const bajoCosto = variants.flatMap((v) => {
+      const c = parsearNumero(v.cost) ?? 0;
+      if (c <= 0) return [];
+      return tiers
+        .filter((t) => {
+          const p = parsearNumero(v.prices[t.id] ?? "");
+          return p != null && p > 0 && p < c;
+        })
+        .map((t) => `${v.name || "Presentación"} · ${t.name}`);
+    });
+    if (
+      bajoCosto.length &&
+      !window.confirm(
+        `Estos precios quedan POR DEBAJO DEL COSTO:\n\n${bajoCosto.join("\n")}\n\n¿Guardar igual?`,
+      )
+    ) {
+      return;
+    }
     setGuardando(true);
 
     const input: ProductoInput = {
@@ -561,10 +586,10 @@ export function ProductForm({
 
               <div className="mt-3">
                 <Label>Precios por nivel</Label>
-                {preciosBloqueados ? (
+                {preciosBloqueadosDe(v) ? (
                   <FieldHint>
-                    Los precios los administra un administrador del catálogo. Vos
-                    podés ver y ajustar todo lo demás.
+                    Para cambiar estos precios hace falta el permiso de precios.
+                    Pedíselo a un administrador del catálogo.
                   </FieldHint>
                 ) : (
                   <FieldHint>
@@ -574,47 +599,70 @@ export function ProductForm({
                   </FieldHint>
                 )}
                 <div className="mt-1 grid gap-2 sm:grid-cols-3">
-                  {tiers.map((t) => (
-                    <div key={t.id}>
-                      <span className="mb-0.5 block text-xs text-texto-sec">
-                        {t.name}
-                      </span>
-                      <div className="flex gap-1">
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={v.prices[t.id] ?? ""}
-                          onChange={(e) => setPrecio(v.key, t.id, e.target.value)}
-                          placeholder="0,00"
-                          className="flex-1"
-                          disabled={preciosBloqueados}
-                          aria-label={`Precio ${t.name}`}
-                        />
-                        <div className="relative w-16 shrink-0">
-                          <Input
-                            type="text"
-                            inputMode="decimal"
-                            value={v.margins[t.id] ?? ""}
-                            onChange={(e) =>
-                              setMargen(v.key, t.id, e.target.value)
-                            }
-                            placeholder="%"
-                            disabled={preciosBloqueados || !parsearNumero(v.cost)}
-                            title={
-                              parsearNumero(v.cost)
-                                ? "% de ganancia sobre el costo"
-                                : "Cargá el costo para usar el %"
-                            }
-                            className="pr-4 text-center"
-                            aria-label={`% ganancia ${t.name}`}
-                          />
-                          <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-texto-tenue">
-                            %
-                          </span>
+                  {tiers.map((t) => {
+                    const costo = parsearNumero(v.cost) ?? 0;
+                    const precio = parsearNumero(v.prices[t.id] ?? "");
+                    const bajoCosto =
+                      costo > 0 && precio != null && precio > 0 && precio < costo;
+                    const bloqueado = preciosBloqueadosDe(v);
+                    return (
+                      <div key={t.id}>
+                        <span className="mb-0.5 block text-xs text-texto-sec">
+                          {t.name}
+                        </span>
+                        <div className="flex gap-1">
+                          <div className="relative flex-1">
+                            <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-xs text-texto-tenue">
+                              $
+                            </span>
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={v.prices[t.id] ?? ""}
+                              onChange={(e) => setPrecio(v.key, t.id, e.target.value)}
+                              placeholder="Precio"
+                              className={cn(
+                                "pl-5",
+                                bajoCosto && "border-error focus:border-error",
+                              )}
+                              disabled={bloqueado}
+                              aria-label={`Precio ${t.name}`}
+                              aria-invalid={bajoCosto || undefined}
+                            />
+                          </div>
+                          <div className="relative w-16 shrink-0">
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              value={v.margins[t.id] ?? ""}
+                              onChange={(e) =>
+                                setMargen(v.key, t.id, e.target.value)
+                              }
+                              disabled={bloqueado || !costo}
+                              title={
+                                costo
+                                  ? "% de ganancia sobre el costo"
+                                  : "Cargá el costo para usar el %"
+                              }
+                              className={cn(
+                                "pr-4 text-center",
+                                bajoCosto && "text-error",
+                              )}
+                              aria-label={`% ganancia ${t.name}`}
+                            />
+                            <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-texto-tenue">
+                              %
+                            </span>
+                          </div>
                         </div>
+                        {bajoCosto && (
+                          <p className="mt-0.5 text-xs text-error">
+                            Queda por debajo del costo
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 {tiers.length === 0 && (
                   <FieldHint>

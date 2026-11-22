@@ -79,6 +79,7 @@ export const ETIQUETA_ENTIDAD: Record<string, string> = {
   product_supplier: "Proveedor del producto",
   promotion: "Promo",
   customer_transaction: "Movimiento de cuenta",
+  customer_price: "Precio especial de cliente",
 };
 
 export const TIPOS_DOC = ["DNI", "CUIT", "CUIL", "CDI", "Pasaporte", "Otro"] as const;
@@ -137,6 +138,9 @@ export const TIPOS_MOVIMIENTO_CC = [
   "ajuste",
 ] as const;
 export type TipoMovimientoCC = (typeof TIPOS_MOVIMIENTO_CC)[number];
+
+/** Lo que carga cualquier empleado; el resto exige cuenta_corriente_admin. */
+export const TIPOS_MOVIMIENTO_BASE: readonly TipoMovimientoCC[] = ["cargo", "pago"];
 
 export const ETIQUETA_MOVIMIENTO_CC: Record<TipoMovimientoCC, string> = {
   cargo: "Cargo (venta / factura)",

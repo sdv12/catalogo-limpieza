@@ -13,6 +13,7 @@ import { formatearMoneda, formatearFecha } from "@/lib/format";
 import { parsearNumero } from "@/lib/validation/ledger";
 import {
   TIPOS_MOVIMIENTO_CC,
+  TIPOS_MOVIMIENTO_BASE,
   ETIQUETA_MOVIMIENTO_CC,
   SIGNO_MOVIMIENTO_CC,
   type TipoMovimientoCC,
@@ -128,7 +129,9 @@ export function CustomerLedger({
                   value={kind}
                   onChange={(e) => setKind(e.target.value as TipoMovimientoCC)}
                 >
-                  {TIPOS_MOVIMIENTO_CC.map((k) => (
+                  {TIPOS_MOVIMIENTO_CC.filter(
+                    (k) => puedeCorregir || TIPOS_MOVIMIENTO_BASE.includes(k),
+                  ).map((k) => (
                     <option key={k} value={k}>
                       {ETIQUETA_MOVIMIENTO_CC[k]}
                     </option>

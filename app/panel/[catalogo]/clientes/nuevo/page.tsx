@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { resolverCatalogo, puedeEditar } from "@/lib/dal";
+import { resolverCatalogo, puedeEditar, tienePermiso } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { tiersDelCatalogo, vendedoresDelCatalogo } from "@/lib/catalog-data";
 import { CustomerForm } from "@/components/customers/CustomerForm";
@@ -33,7 +33,7 @@ export default async function NuevoClientePage({
         Clientes
       </Link>
       <h1 className="text-xl font-semibold text-texto">Nuevo cliente</h1>
-      <CustomerForm slug={slug} tiers={tiers} vendedores={vendedores} />
+      <CustomerForm slug={slug} tiers={tiers} vendedores={vendedores} puedeCambiarNivel={tienePermiso(catalogo, "precios_lote")} />
     </div>
   );
 }

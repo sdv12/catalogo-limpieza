@@ -57,6 +57,18 @@ Si no podés entrar:
     relacionados: ["usuarios-agregar", "roles"],
   },
   {
+    id: "novedades",
+    categoria: "General",
+    titulo: "Qué cambió en el panel (Novedades)",
+    claves: ["novedades", "que cambio", "cambios", "actualizacion", "actualizaciones", "nuevo", "version", "punto rojo", "puntito rojo", "que hay de nuevo"],
+    respuesta: `En el menú lateral está "Novedades": ahí se cuenta cada actualización del panel, con la fecha y qué cambió.
+1. Tocá "Novedades" en el menú (abajo de "Actividad").
+2. Arriba de todo está lo último que se agregó.
+Cuando hay algo nuevo que todavía no viste, aparece un puntito rojo al lado de "Novedades". Se apaga cuando la abrís.
+La versión actual del panel figura también abajo de cada pantalla.`,
+    relacionados: ["dashboard", "actividad"],
+  },
+  {
     id: "cambiar-catalogo",
     categoria: "General",
     titulo: "Cambiar de catálogo (Aura / Aromas)",
@@ -82,7 +94,7 @@ Solo ves los catálogos a los que te dieron acceso.`,
     titulo: "Roles y permisos: qué puede hacer cada uno",
     claves: ["rol", "roles", "permiso", "permisos", "empleado", "administrador", "solo lectura", "viewer", "no me aparece", "no veo", "falta seccion", "no tengo permiso"],
     respuesta: `- Administrador: puede todo en el catálogo (precios, carga masiva, promos, costos, cuenta corriente, facturación y usuarios).
-- Empleado: puede productos y stock, categorías, clientes y proveedores, cargar cargos y pagos en cuenta corriente y editar el precio de un producto. Un admin le puede prender permisos extra: precios en lote, costos, carga masiva, promos, corregir cuenta corriente y gestionar usuarios.
+- Empleado: puede productos y stock, categorías, clientes y proveedores, cargar cargos y pagos en cuenta corriente y ponerle precio a un producto nuevo. Un admin le puede prender permisos extra: precios (cambiar precios ya cargados, niveles y en lote), precios especiales por cliente, costos, carga masiva, promos, cuenta corriente (ajustes y notas) y gestionar usuarios.
 - Solo lectura: ve todo pero no puede cambiar nada (arriba dice "Solo lectura").
 Si te falta una sección del menú o te sale "No tenés permiso…", pedile a un administrador que te prenda el permiso en "Usuarios".`,
     relacionados: ["usuarios-permisos"],
@@ -279,13 +291,14 @@ El ajuste queda registrado en "Actividad".`,
     categoria: "Precios",
     titulo: "Cambiar el precio de un producto",
     claves: ["cambiar precio", "precio de un producto", "modificar precio", "precio", "precios", "actualizar precio"],
-    requiere: "editar",
-    respuesta: `1. Entrá al producto desde "Productos".
-2. En "Presentaciones y precios" cambiá el precio del nivel que corresponda.
-3. Si tenés el costo cargado, podés poner un % de ganancia y el precio se calcula solo.
+    requiere: "precios_lote",
+    respuesta: `Ojo: esto cambia el precio para TODOS los clientes de ese nivel y en la tienda online. Si es solo para un cliente, usá un precio especial.
+1. Entrá al producto desde "Productos".
+2. En "Presentaciones y precios" cambiá el precio del nivel que corresponda. El casillero chico de al lado es el % de ganancia sobre el costo: si ponés el %, el precio se calcula solo.
+3. Si un precio queda por debajo del costo se marca en rojo y te pide confirmar antes de guardar.
 4. "Guardar cambios".
-Para cambiar muchos productos a la vez usá el reprecio en lote.`,
-    relacionados: ["precio-lote", "precio-niveles"],
+Un empleado sin el permiso de precios puede poner precio a un producto nuevo, pero no cambiar uno ya cargado.`,
+    relacionados: ["precio-especial", "precio-lote", "precio-niveles"],
   },
   {
     id: "precio-lote",
@@ -323,7 +336,27 @@ Si dice "Ningún precio coincide con los filtros", revisá filtros y niveles.`,
 1. Andá a "Precios".
 2. Para crear uno escribí el nombre en "Nuevo nivel" y guardá.
 3. Podés renombrarlo, eliminarlo o marcarlo como nivel por defecto.
-Después de crear un nivel nuevo, cargale precios a los productos (a mano, con reprecio en lote o con carga masiva).`,
+Podés tener todos los niveles que necesites (ej: Minorista, Mayorista 1, Mayorista 2, Mayorista 3, Revendedor, Supermercado).
+Después de crear un nivel nuevo, cargale precios a los productos (a mano, con reprecio en lote o con carga masiva).
+Cambiar el nivel de un cliente también requiere este permiso.`,
+    relacionados: ["precio-especial"],
+  },
+  {
+    id: "precio-especial",
+    categoria: "Precios",
+    titulo: "Precio especial para un cliente",
+    claves: ["precio especial", "precio especial cliente", "precio distinto", "precio para un cliente", "descuento cliente", "precio unico", "solo para un cliente", "acuerdo", "precio pactado", "condicion especial"],
+    requiere: "precios_especiales",
+    respuesta: `Sirve para darle a UN cliente un precio distinto en un producto, sin cambiar el precio general, el de otros clientes ni la tienda online.
+1. Andá a "Clientes" y entrá al cliente.
+2. En "Precios especiales" tocá "Agregar".
+3. Buscá el producto y elegí la presentación. Ves el precio general que le corresponde (el de su nivel).
+4. Poné el precio especial, el motivo (obligatorio) y, si querés, hasta qué día vale.
+5. "Guardar". Para volver al precio general, tocá el tachito.
+- Todo queda registrado en "Actividad" con quién lo dio.
+- Un precio por debajo del costo solo lo puede dar un administrador.
+- Aplicarlo solo a una venta puntual va a llegar con el módulo de Ventas.`,
+    relacionados: ["precio-uno", "precio-niveles"],
   },
 
   // ───────────────────────── Clientes
@@ -349,9 +382,9 @@ Cargale el email: lo usan los avisos automáticos de vencimiento.`,
     respuesta: `1. Andá a "Clientes" y entrá al cliente.
 2. En "Cuenta corriente" agregá un movimiento.
 3. Elegí el tipo:
-- "Cargo (venta / factura)" o "Nota de débito": suman deuda y llevan fecha de vencimiento.
-- "Pago recibido" o "Nota de crédito": restan deuda.
-- "Ajuste manual": corrige el saldo para un lado o el otro.
+- "Cargo (venta / factura)": suma deuda y lleva fecha de vencimiento.
+- "Pago recibido": resta deuda.
+- "Nota de crédito", "Nota de débito" y "Ajuste manual": solo con el permiso de cuenta corriente (o un administrador), porque pueden borrar deuda.
 4. Poné el importe, el vencimiento si corresponde y una nota (ej: N° de comprobante).
 5. Guardá. El saldo se recalcula solo.`,
     relacionados: ["cc-corregir", "cc-deudores"],
@@ -362,7 +395,8 @@ Cargale el email: lo usan los avisos automáticos de vencimiento.`,
     titulo: "Corregir o borrar un movimiento de cuenta corriente",
     claves: ["borrar movimiento", "eliminar movimiento", "corregir movimiento", "movimiento mal", "cargue mal", "pago mal"],
     requiere: "cuenta_corriente_admin",
-    respuesta: `1. Entrá al cliente → "Cuenta corriente".
+    respuesta: `Con este permiso también podés cargar notas de crédito/débito y ajustes manuales.
+1. Entrá al cliente → "Cuenta corriente".
 2. En el movimiento equivocado tocá "Eliminar movimiento" y confirmá.
 3. Cargalo de nuevo bien.
 El saldo se recalcula y queda registrado en "Actividad".`,
@@ -505,7 +539,7 @@ Solo un administrador puede crear otros administradores.`,
     respuesta: `1. Andá a "Usuarios".
 2. En la persona cambiá el Rol o prendé / apagá los permisos extra.
 3. Guardá. El cambio aplica la próxima vez que cargue una pantalla.
-Permisos extra para empleados: precios en lote, ver costos y proveedores, carga masiva, promos, corregir cuenta corriente y gestionar usuarios.`,
+Permisos extra para empleados: precios (cambiar precios ya cargados, niveles, en lote y el nivel de un cliente), precios especiales por cliente, ver costos y proveedores, carga masiva, promos, cuenta corriente (ajustes, notas y correcciones) y gestionar usuarios.`,
   },
   {
     id: "usuarios-quitar",

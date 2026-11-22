@@ -139,7 +139,7 @@ export default async function EditarProductoPage({
             categorias={categorias}
             tiers={tiers}
             producto={existente}
-            puedeEditarPrecios={puedeEditar(catalogo)}
+            puedeEditarPrecios={tienePermiso(catalogo, "precios_lote")}
           />
           {verCostos && (
             <ProductSuppliers
