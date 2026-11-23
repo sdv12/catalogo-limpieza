@@ -17,7 +17,11 @@ const catalogoSchema = z.object({
     .trim()
     .regex(/^[a-z0-9-]+$/, "El slug solo admite minúsculas, números y guiones")
     .optional(),
+  kind: z.enum(["ecommerce", "sucursal"]),
 });
+
+/** Slugs que usan pantallas del panel (/panel/catalogos, /panel/sucursales). */
+const SLUGS_RESERVADOS = new Set(["catalogos", "sucursales", "nuevo", "api"]);
 
 export async function crearCatalogo(
   _prev: Resultado | null,
@@ -27,17 +31,21 @@ export async function crearCatalogo(
   const parsed = catalogoSchema.safeParse({
     name: formData.get("name"),
     slug: formData.get("slug") || undefined,
+    kind: formData.get("kind") || "ecommerce",
   });
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0].message };
   }
   const slug = generarSlug(parsed.data.slug || parsed.data.name);
   if (!slug) return { ok: false, message: "No se pudo generar el slug" };
+  if (SLUGS_RESERVADOS.has(slug)) {
+    return { ok: false, message: `"${slug}" está reservado: elegí otro slug` };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("catalogs")
-    .insert({ name: parsed.data.name, slug });
+    .insert({ name: parsed.data.name, slug, kind: parsed.data.kind });
 
   if (error) {
     return {
@@ -49,12 +57,21 @@ export async function crearCatalogo(
   }
   revalidatePath("/panel");
   revalidatePath("/panel/catalogos");
-  return { ok: true, message: `Catálogo "${parsed.data.name}" creado` };
+  revalidatePath("/panel/sucursales");
+  return {
+    ok: true,
+    message: `${parsed.data.kind === "sucursal" ? "Sucursal" : "Tienda"} "${parsed.data.name}" creada. Agregale el administrador (Matías) y su equipo.`,
+  };
 }
 
 export async function actualizarCatalogo(
   id: string,
-  data: { name?: string; is_active?: boolean; logo_path?: string | null },
+  data: {
+    name?: string;
+    is_active?: boolean;
+    logo_path?: string | null;
+    kind?: "ecommerce" | "sucursal";
+  },
 ): Promise<Resultado> {
   await exigirSuperadmin();
   const supabase = await createClient();
@@ -62,6 +79,7 @@ export async function actualizarCatalogo(
     name?: string;
     is_active?: boolean;
     logo_path?: string | null;
+    kind?: "ecommerce" | "sucursal";
   } = {};
   if (typeof data.name === "string") {
     const name = data.name.trim();
@@ -70,13 +88,15 @@ export async function actualizarCatalogo(
   }
   if (typeof data.is_active === "boolean") patch.is_active = data.is_active;
   if (data.logo_path !== undefined) patch.logo_path = data.logo_path;
+  if (data.kind === "ecommerce" || data.kind === "sucursal") patch.kind = data.kind;
 
   const { error } = await supabase.from("catalogs").update(patch).eq("id", id);
   if (error) return { ok: false, message: error.message };
 
   revalidatePath("/panel");
   revalidatePath("/panel/catalogos");
-  return { ok: true, message: "Catálogo actualizado" };
+  revalidatePath("/panel/sucursales");
+  return { ok: true, message: "Actualizado" };
 }
 
 const miembroSchema = z.object({

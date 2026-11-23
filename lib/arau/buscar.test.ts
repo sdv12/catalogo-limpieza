@@ -28,6 +28,8 @@ describe("ARAU — búsqueda de temas", () => {
     ["quiero darle un precio especial a un cliente", "precio-especial"],
     ["cómo cargo una venta", "venta-nueva"],
     ["cómo abro la caja", "caja-abrir"],
+    ["cómo entro a otra sucursal", "cambiar-catalogo"],
+    ["quiero crear una sucursal nueva", "catalogos"],
     ["cómo hago el cierre de caja", "caja-cerrar"],
     ["me pagó por transferencia", "caja-cobrar"],
     ["tengo que sacar plata para un gasto", "caja-egreso"],

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useNovedadesSinVer } from "@/components/novedades/visto";
-import type { RolEfectivo, PermisoCatalogo } from "@/lib/roles";
+import type { RolEfectivo, PermisoCatalogo, TipoCatalogo } from "@/lib/roles";
 
 type Item = {
   href: string;
@@ -44,6 +44,7 @@ function items(
   facturacionPendiente: boolean,
   novedadesSinVer: boolean,
   pedidosNuevos: number,
+  tipo: TipoCatalogo,
 ): Item[] {
   const b = `/panel/${slug}`;
   const esAdmin = rol === "superadmin" || rol === "admin";
@@ -61,7 +62,8 @@ function items(
   if (tiene("precios_lote")) {
     base.push({ href: `${b}/precios`, label: "Precios", icon: Tags });
   }
-  if (tiene("promos")) {
+  // Promos son de la tienda online: las sucursales no tienen.
+  if (tiene("promos") && tipo === "ecommerce") {
     base.push({ href: `${b}/promos`, label: "Promos", icon: Megaphone });
   }
   if (esAdmin) {
@@ -99,6 +101,7 @@ export function CatalogSidebar({
   permisos,
   facturacionPendiente,
   pedidosNuevos,
+  tipo,
   abierto,
   onCerrar,
 }: {
@@ -108,6 +111,7 @@ export function CatalogSidebar({
   permisos: PermisoCatalogo[];
   facturacionPendiente: boolean;
   pedidosNuevos: number;
+  tipo: TipoCatalogo;
   abierto: boolean;
   onCerrar: () => void;
 }) {
@@ -120,6 +124,7 @@ export function CatalogSidebar({
     facturacionPendiente,
     novedadesSinVer,
     pedidosNuevos,
+    tipo,
   );
 
   return (
@@ -204,7 +209,7 @@ export function CatalogSidebar({
             className="flex items-center gap-2 rounded-comp-sm px-3 py-2 text-sm text-texto-sec hover:bg-superficie-sec hover:text-texto"
           >
             <ChevronLeft size={16} />
-            Cambiar catálogo
+            {tipo === "sucursal" ? "Otras sucursales / inicio" : "Cambiar de tienda o sucursal"}
           </Link>
         </div>
       </aside>

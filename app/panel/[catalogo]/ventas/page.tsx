@@ -119,7 +119,7 @@ export default async function VentasPage({
           </p>
         </div>
         <div className="flex gap-2">
-          {esAdminCatalogo(catalogo) && (
+          {esAdminCatalogo(catalogo) && catalogo.kind === "ecommerce" && (
             <Link href={`/panel/${slug}/ventas/canales`}>
               <Button variante="secundario">
                 <KeyRound size={16} />

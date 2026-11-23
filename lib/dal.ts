@@ -17,9 +17,10 @@ export {
   PERMISOS_CATALOGO,
   ETIQUETA_PERMISO,
   DESCRIPCION_PERMISO,
+  ETIQUETA_TIPO_CATALOGO,
 } from "@/lib/roles";
 
-import type { RolCatalogo, CatalogoAccesible, PermisoCatalogo } from "@/lib/roles";
+import type { RolCatalogo, CatalogoAccesible, PermisoCatalogo, TipoCatalogo } from "@/lib/roles";
 
 export type Perfil = {
   id: string;
@@ -77,6 +78,7 @@ type FilaCatalogo = {
   name: string;
   logo_path: string | null;
   is_active: boolean;
+  kind: TipoCatalogo;
 };
 
 export const catalogosDelUsuario = cache(async (): Promise<CatalogoAccesible[]> => {
@@ -86,7 +88,7 @@ export const catalogosDelUsuario = cache(async (): Promise<CatalogoAccesible[]> 
   if (perfil.is_superadmin) {
     const { data } = await supabase
       .from("catalogs")
-      .select("id, slug, name, logo_path, is_active")
+      .select("id, slug, name, logo_path, is_active, kind")
       .order("name");
     return ((data ?? []) as unknown as FilaCatalogo[])
       .filter((c) => c.is_active)
@@ -108,7 +110,7 @@ export const catalogosDelUsuario = cache(async (): Promise<CatalogoAccesible[]> 
   const membresiaPorCatalogo = new Map(filas.map((f) => [f.catalog_id, f]));
   const { data: cats } = await supabase
     .from("catalogs")
-    .select("id, slug, name, logo_path, is_active")
+    .select("id, slug, name, logo_path, is_active, kind")
     .in("id", [...membresiaPorCatalogo.keys()]);
 
   return ((cats ?? []) as unknown as FilaCatalogo[])

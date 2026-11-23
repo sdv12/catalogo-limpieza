@@ -300,6 +300,9 @@ export async function crearClaveCanal(
   nombre: string,
 ): Promise<ResultadoAccion> {
   const catalogo = await exigirAdmin(slug);
+  if (catalogo.kind !== "ecommerce") {
+    return { ok: false, message: "Las sucursales no tienen tienda online ni canales" };
+  }
   if (!CANALES_EXTERNOS.includes(canal)) return { ok: false, message: "Canal inválido" };
   const n = nombre.trim();
   if (n.length < 2 || n.length > 60) {

@@ -3,6 +3,14 @@
 export type RolCatalogo = "admin" | "empleado" | "viewer";
 export type RolEfectivo = RolCatalogo | "superadmin";
 
+/** ecommerce = tiene tienda online (Aura, Aromas); sucursal = local físico. */
+export type TipoCatalogo = "ecommerce" | "sucursal";
+
+export const ETIQUETA_TIPO_CATALOGO: Record<TipoCatalogo, string> = {
+  ecommerce: "Ecommerce",
+  sucursal: "Sucursal",
+};
+
 export const ETIQUETA_ROL: Record<RolEfectivo, string> = {
   superadmin: "Administrador general",
   admin: "Administrador",
@@ -62,6 +70,7 @@ export type CatalogoAccesible = {
   name: string;
   logo_path: string | null;
   is_active: boolean;
+  kind: TipoCatalogo;
   /** Rol del usuario en este catálogo ("superadmin" si lo es globalmente). */
   rol: RolEfectivo;
   /** Permisos extra (solo aplican cuando rol === "empleado"). */

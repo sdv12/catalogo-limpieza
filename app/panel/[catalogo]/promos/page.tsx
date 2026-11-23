@@ -12,7 +12,7 @@ export default async function PromosPage({
 }) {
   const { catalogo: slug } = await params;
   const catalogo = await resolverCatalogo(slug);
-  if (!tienePermiso(catalogo, "promos")) notFound();
+  if (!tienePermiso(catalogo, "promos") || catalogo.kind !== "ecommerce") notFound();
   const supabase = await createClient();
 
   const { data } = await supabase

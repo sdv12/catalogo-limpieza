@@ -34,7 +34,7 @@ export default async function CanalesPage({
 }) {
   const { catalogo: slug } = await params;
   const catalogo = await resolverCatalogo(slug);
-  if (!esAdminCatalogo(catalogo)) notFound();
+  if (!esAdminCatalogo(catalogo) || catalogo.kind !== "ecommerce") notFound();
   const supabase = await createClient();
   const { data } = await supabase
     .from("channel_keys")

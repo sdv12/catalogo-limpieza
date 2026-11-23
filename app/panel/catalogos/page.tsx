@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/layout/LogoutButton";
 import { CatalogosAdmin } from "@/components/catalogs/CatalogosAdmin";
 
-export const metadata = { title: "Catálogos y usuarios — Admin" };
+export const metadata = { title: "Tiendas, sucursales y usuarios — Admin" };
 
 export type MiembroVista = {
   user_id: string;
@@ -24,7 +24,7 @@ export default async function AdminCatalogosPage() {
     await Promise.all([
       supabase
         .from("catalogs")
-        .select("id, slug, name, is_active, created_at")
+        .select("id, slug, name, is_active, kind, created_at")
         .order("name"),
       supabase
         .from("catalog_members")
@@ -59,7 +59,7 @@ export default async function AdminCatalogosPage() {
           Volver
         </Link>
         <span className="text-sm font-semibold text-texto">
-          Catálogos y usuarios
+          Tiendas, sucursales y usuarios
         </span>
         <div className="ml-auto">
           <LogoutButton />
@@ -68,7 +68,10 @@ export default async function AdminCatalogosPage() {
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
         <CatalogosAdmin
-          catalogos={catalogos ?? []}
+          catalogos={(catalogos ?? []).map((c) => ({
+            ...c,
+            kind: c.kind === "sucursal" ? ("sucursal" as const) : ("ecommerce" as const),
+          }))}
           miembrosPorCatalogo={miembrosPorCatalogo}
           superadmins={(perfiles ?? [])
             .filter((p) => p.is_superadmin && p.is_active)

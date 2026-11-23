@@ -8,7 +8,12 @@ import { CommandPalette } from "@/components/layout/CommandPalette";
 import { ArauChat } from "@/components/arau/ArauChat";
 import { Footer } from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/Badge";
-import { ETIQUETA_ROL, type RolEfectivo, type PermisoCatalogo } from "@/lib/roles";
+import {
+  ETIQUETA_ROL,
+  type RolEfectivo,
+  type PermisoCatalogo,
+  type TipoCatalogo,
+} from "@/lib/roles";
 
 export function CatalogShell({
   children,
@@ -19,6 +24,7 @@ export function CatalogShell({
   permisos,
   facturacionPendiente,
   pedidosNuevos,
+  tipo,
 }: {
   children: React.ReactNode;
   slug: string;
@@ -28,6 +34,7 @@ export function CatalogShell({
   permisos: PermisoCatalogo[];
   facturacionPendiente: boolean;
   pedidosNuevos: number;
+  tipo: TipoCatalogo;
 }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
@@ -40,6 +47,7 @@ export function CatalogShell({
         permisos={permisos}
         facturacionPendiente={facturacionPendiente}
         pedidosNuevos={pedidosNuevos}
+        tipo={tipo}
         abierto={menuAbierto}
         onCerrar={() => setMenuAbierto(false)}
       />
@@ -55,6 +63,7 @@ export function CatalogShell({
             <Menu size={20} />
           </button>
 
+          {tipo === "sucursal" && <Badge tono="neutro">Sucursal</Badge>}
           {rol === "viewer" && <Badge tono="alerta">Solo lectura</Badge>}
           {rol === "empleado" && <Badge tono="info">Empleado</Badge>}
 

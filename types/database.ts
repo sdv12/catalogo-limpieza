@@ -236,6 +236,7 @@ export type Database = {
       }
       catalogs: {
         Row: {
+          kind: string
           attributes: Json
           created_at: string
           created_by: string | null
@@ -247,6 +248,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          kind?: string
           attributes?: Json
           created_at?: string
           created_by?: string | null
@@ -258,6 +260,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          kind?: string
           attributes?: Json
           created_at?: string
           created_by?: string | null

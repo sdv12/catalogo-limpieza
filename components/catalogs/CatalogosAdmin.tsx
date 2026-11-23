@@ -24,6 +24,7 @@ type Catalogo = {
   slug: string;
   name: string;
   is_active: boolean;
+  kind: "ecommerce" | "sucursal";
 };
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
@@ -51,7 +52,7 @@ export function CatalogosAdmin({
     <div className="space-y-6">
       <Card>
         <CardBody>
-          <h2 className="text-sm font-semibold text-texto">Nuevo catálogo</h2>
+          <h2 className="text-sm font-semibold text-texto">Nueva tienda o sucursal</h2>
           <form
             action={accionNuevo}
             className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end"
@@ -60,7 +61,14 @@ export function CatalogosAdmin({
               <Label htmlFor="name" requerido>
                 Nombre
               </Label>
-              <Input id="name" name="name" placeholder="Catálogo Aura" required />
+              <Input id="name" name="name" placeholder="Sucursal Centro" required />
+            </div>
+            <div className="sm:w-48">
+              <Label htmlFor="kind">Tipo</Label>
+              <Select id="kind" name="kind" defaultValue="sucursal">
+                <option value="sucursal">Sucursal (local)</option>
+                <option value="ecommerce">Tienda online</option>
+              </Select>
             </div>
             <div className="flex-1">
               <Label htmlFor="slug">Slug (opcional)</Label>
@@ -120,6 +128,12 @@ function CatalogoRow({
     if (r.ok) onCambio();
   }
 
+  async function cambiarTipo(kind: "ecommerce" | "sucursal") {
+    const r = await actualizarCatalogo(catalogo.id, { kind });
+    notificar(r);
+    if (r.ok) onCambio();
+  }
+
   async function toggleActivo() {
     const r = await actualizarCatalogo(catalogo.id, {
       is_active: !catalogo.is_active,
@@ -139,6 +153,9 @@ function CatalogoRow({
         <Store size={18} className="text-primario" />
         <span className="font-medium text-texto">{catalogo.name}</span>
         <code className="text-xs text-texto-tenue">/{catalogo.slug}</code>
+        <Badge tono={catalogo.kind === "sucursal" ? "neutro" : "primario"}>
+          {catalogo.kind === "sucursal" ? "Sucursal" : "Tienda online"}
+        </Badge>
         {!catalogo.is_active && <Badge tono="alerta">Inactivo</Badge>}
         <span className="ml-auto text-xs text-texto-tenue">
           {miembros.length} {miembros.length === 1 ? "usuario" : "usuarios"}
@@ -163,6 +180,17 @@ function CatalogoRow({
             >
               Guardar
             </Button>
+            <div className="sm:w-44">
+              <Label htmlFor={`k-${catalogo.id}`}>Tipo</Label>
+              <Select
+                id={`k-${catalogo.id}`}
+                value={catalogo.kind}
+                onChange={(e) => cambiarTipo(e.target.value as "ecommerce" | "sucursal")}
+              >
+                <option value="sucursal">Sucursal (local)</option>
+                <option value="ecommerce">Tienda online</option>
+              </Select>
+            </div>
             <Button
               variante={catalogo.is_active ? "peligro" : "primario"}
               onClick={toggleActivo}

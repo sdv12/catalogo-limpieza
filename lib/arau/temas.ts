@@ -73,12 +73,13 @@ La versión actual del panel figura también abajo de cada pantalla.`,
   {
     id: "cambiar-catalogo",
     categoria: "General",
-    titulo: "Cambiar de catálogo (Aura / Aromas)",
-    claves: ["cambiar catalogo", "otro catalogo", "aura", "aromas", "selector", "elegir catalogo"],
-    respuesta: `Cada catálogo tiene sus propios productos, precios, clientes, proveedores y usuarios.
-1. En el menú lateral, abajo de todo, tocá "Cambiar catálogo".
-2. En el selector elegí el catálogo al que querés ir.
-Solo ves los catálogos a los que te dieron acceso.`,
+    titulo: "Cambiar de tienda o sucursal (Aura / Aromas / Sucursales)",
+    claves: ["cambiar catalogo", "otro catalogo", "aura", "aromas", "selector", "elegir catalogo", "sucursal", "sucursales", "otra sucursal", "cambiar de sucursal", "pantalla principal", "inicio"],
+    respuesta: `En la pantalla principal están las tiendas online (Aura, Aromas) y "Sucursales". Dentro de Sucursales aparecen los locales.
+Cada tienda y cada sucursal es un panel aparte, con sus propios productos, precios, clientes, stock, ventas, caja y equipo.
+1. En el menú lateral, abajo de todo, tocá "Cambiar de tienda o sucursal".
+2. Elegí a dónde querés ir (para un local, entrá a "Sucursales").
+Solo ves lo que tenés asignado. El administrador decide qué ve y qué puede hacer cada empleado en cada lugar.`,
   },
   {
     id: "buscador",
@@ -706,13 +707,14 @@ Deja de tener acceso a ese catálogo. Sus cambios anteriores siguen en "Activida
   {
     id: "catalogos",
     categoria: "Usuarios",
-    titulo: "Crear un catálogo nuevo",
-    claves: ["crear catalogo", "nuevo catalogo", "catalogos"],
+    titulo: "Crear una sucursal o tienda nueva",
+    claves: ["crear catalogo", "nuevo catalogo", "catalogos", "crear sucursal", "nueva sucursal", "abrir sucursal", "nueva tienda", "nuevo local"],
     requiere: "superadmin",
-    respuesta: `Solo el administrador general.
-1. Volvé al selector ("Cambiar catálogo").
-2. Tocá "Administrar catálogos y usuarios" y usá "Nuevo catálogo" (nombre y slug opcional).
-3. Asignale usuarios con su rol.`,
+    respuesta: `Solo el administrador general (el desarrollador) crea sucursales y tiendas.
+1. En la pantalla principal tocá "Administrar tiendas, sucursales y usuarios".
+2. En "Nueva tienda o sucursal" poné el nombre y elegí el tipo (Sucursal o Tienda online).
+3. Agregale el administrador del negocio y el equipo con su rol.
+Después, el administrador de esa sucursal maneja sus empleados y permisos desde "Usuarios" y ve todo lo que se hizo en "Actividad".`,
   },
 
   // ───────────────────────── Facturación

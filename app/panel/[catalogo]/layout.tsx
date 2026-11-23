@@ -31,6 +31,7 @@ export default async function CatalogoLayout({
       permisos={catalogo.permisos}
       facturacionPendiente={!facturacionHabilitada()}
       pedidosNuevos={pedidosNuevos ?? 0}
+      tipo={catalogo.kind}
     >
       {children}
     </CatalogShell>

@@ -16,6 +16,17 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    version: "0.13.0",
+    fecha: "2026-11-25",
+    titulo: "Tiendas online y sucursales separadas",
+    cambios: [
+      "La pantalla principal ahora muestra las tiendas online (Aura, Aromas) y «Sucursales». Dentro de Sucursales aparecen los locales.",
+      "Cada sucursal es un panel independiente, con sus propios productos, precios, clientes, stock, ventas, caja y equipo.",
+      "Cada persona ve solo las tiendas y sucursales que tiene asignadas. El administrador de cada una decide qué ve y qué puede hacer cada empleado, y revisa todo en «Actividad».",
+      "Las sucursales no tienen promos ni pedidos de la tienda online: eso queda solo en Aura y Aromas.",
+    ],
+  },
+  {
     version: "0.12.0",
     fecha: "2026-11-24",
     titulo: "Caja y cobranzas con recibo",
