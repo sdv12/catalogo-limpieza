@@ -65,3 +65,23 @@ export const ETIQUETA_ORIGEN_PRECIO: Record<string, string> = {
   especial: "Especial del cliente",
   manual: "Cambiado en la venta",
 };
+
+export const METODOS_PAGO = [
+  "efectivo",
+  "transferencia",
+  "mercado_pago",
+  "debito",
+  "credito",
+] as const;
+export type MetodoPago = (typeof METODOS_PAGO)[number];
+
+export const ETIQUETA_METODO_PAGO: Record<MetodoPago, string> = {
+  efectivo: "Efectivo",
+  transferencia: "Transferencia",
+  mercado_pago: "Mercado Pago",
+  debito: "Tarjeta de débito",
+  credito: "Tarjeta de crédito",
+};
+
+/** Línea de pago de un recibo (lo que manda la UI). */
+export type LineaPago = { method: MetodoPago; amount: number; reference: string | null };

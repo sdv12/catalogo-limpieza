@@ -13,12 +13,24 @@ import { resolverCatalogo } from "@/lib/dal";
 import { tienePermiso } from "@/lib/roles";
 import { sanitizarBusqueda } from "@/lib/format";
 import { ventaSchema, type VentaInput } from "@/lib/validation/venta";
+import { lineasPagoSchema } from "@/lib/validation/cobro";
+import { enviarReciboPorMail } from "@/lib/recibos";
 import {
   CANALES_EXTERNOS,
   ESTADOS_PEDIDO,
   type CanalExterno,
   type EstadoPedido,
+  type LineaPago,
 } from "@/lib/ventas";
+
+/** Cómo se cobra una venta de contado al confirmarla. */
+export type CobroConfirmacion = { pagos: LineaPago[] | null; cobrarAlEntregar: boolean };
+
+function validarCobro(c: CobroConfirmacion): string | null {
+  if (c.cobrarAlEntregar || !c.pagos) return null;
+  const r = lineasPagoSchema.safeParse(c.pagos);
+  return r.success ? null : r.error.issues[0].message;
+}
 
 function rev(slug: string, id?: string) {
   revalidatePath(`/panel/${slug}/ventas`);
@@ -171,9 +183,13 @@ export async function guardarPedido(
   slug: string,
   orderId: string | null,
   input: VentaInput,
-  confirmar: boolean,
+  confirmar: CobroConfirmacion | null,
 ): Promise<ResultadoAccion> {
   const catalogo = await exigirEdicion(slug);
+  if (confirmar) {
+    const e = validarCobro(confirmar);
+    if (e) return { ok: false, message: e };
+  }
   const parsed = ventaSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0].message };
@@ -199,8 +215,14 @@ export async function guardarPedido(
   if (error || !id) return { ok: false, message: mensaje(error, "No se pudo guardar el pedido") };
 
   if (confirmar) {
-    const { error: eConf } = await supabase.rpc("confirmar_pedido", { p_order: id });
+    const { data: reciboId, error: eConf } = await supabase.rpc("confirmar_pedido", {
+      p_order: id,
+      p_pagos: confirmar.cobrarAlEntregar ? undefined : (confirmar.pagos ?? undefined),
+      p_cobrar_al_entregar: confirmar.cobrarAlEntregar,
+    });
     rev(slug, id);
+    revalidatePath(`/panel/${slug}/caja`, "layout");
+    if (reciboId) await enviarReciboPorMail(catalogo, reciboId);
     if (eConf) {
       return {
         ok: false,
@@ -215,13 +237,31 @@ export async function guardarPedido(
   return { ok: true, message: "Pedido guardado", data: { id } };
 }
 
-export async function confirmarPedido(slug: string, id: string): Promise<ResultadoAccion> {
-  await exigirEdicion(slug);
+export async function confirmarPedido(
+  slug: string,
+  id: string,
+  cobro: CobroConfirmacion,
+): Promise<ResultadoAccion> {
+  const catalogo = await exigirEdicion(slug);
+  const e = validarCobro(cobro);
+  if (e) return { ok: false, message: e };
   const supabase = await createClient();
-  const { error } = await supabase.rpc("confirmar_pedido", { p_order: id });
+  const { data: reciboId, error } = await supabase.rpc("confirmar_pedido", {
+    p_order: id,
+    p_pagos: cobro.cobrarAlEntregar ? undefined : (cobro.pagos ?? undefined),
+    p_cobrar_al_entregar: cobro.cobrarAlEntregar,
+  });
   rev(slug, id);
+  revalidatePath(`/panel/${slug}/caja`, "layout");
   if (error) return { ok: false, message: mensaje(error, "No se pudo confirmar") };
-  return { ok: true, message: "Pedido confirmado: se descontó el stock" };
+  if (reciboId) await enviarReciboPorMail(catalogo, reciboId);
+  return {
+    ok: true,
+    message: reciboId
+      ? "Venta confirmada y cobrada: se descontó el stock"
+      : "Pedido confirmado: se descontó el stock",
+    data: { reciboId },
+  };
 }
 
 export async function avanzarPedido(

@@ -83,6 +83,9 @@ export const ETIQUETA_ENTIDAD: Record<string, string> = {
   order: "Pedido",
   order_item: "Renglón de pedido",
   channel_key: "Clave de canal",
+  cash_session: "Caja",
+  receipt: "Recibo",
+  cash_movement: "Movimiento de caja",
 };
 
 export const TIPOS_DOC = ["DNI", "CUIT", "CUIL", "CDI", "Pasaporte", "Otro"] as const;
@@ -142,8 +145,11 @@ export const TIPOS_MOVIMIENTO_CC = [
 ] as const;
 export type TipoMovimientoCC = (typeof TIPOS_MOVIMIENTO_CC)[number];
 
-/** Lo que carga cualquier empleado; el resto exige cuenta_corriente_admin. */
-export const TIPOS_MOVIMIENTO_BASE: readonly TipoMovimientoCC[] = ["cargo", "pago"];
+/**
+ * Lo que carga cualquier empleado a mano; el resto exige cuenta_corriente_admin.
+ * Los pagos normales se registran desde la Caja (con recibo).
+ */
+export const TIPOS_MOVIMIENTO_BASE: readonly TipoMovimientoCC[] = ["cargo"];
 
 export const ETIQUETA_MOVIMIENTO_CC: Record<TipoMovimientoCC, string> = {
   cargo: "Cargo (venta / factura)",

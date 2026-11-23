@@ -16,6 +16,7 @@ import {
   Receipt,
   Sparkles,
   ShoppingCart,
+  Wallet,
   ChevronLeft,
   X,
 } from "lucide-react";
@@ -84,6 +85,10 @@ function items(
     icon: Sparkles,
     nuevo: novedadesSinVer,
   });
+  // Caja: cualquiera que pueda vender (no solo lectura), justo debajo de Ventas.
+  if (rol !== "viewer") {
+    base.splice(2, 0, { href: `${b}/caja`, label: "Caja", icon: Wallet });
+  }
   return base;
 }
 

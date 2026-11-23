@@ -21,8 +21,10 @@ import {
   buscarProductosVenta,
   guardarPedido,
   preciosParaCliente,
+  type CobroConfirmacion,
   type ProductoVenta,
 } from "@/app/panel/[catalogo]/ventas/actions";
+import { ModalCobroVenta } from "@/components/caja/ModalCobroVenta";
 
 export type ClienteVenta = {
   id: string;
@@ -134,6 +136,7 @@ export function OrderForm({
   const [notes, setNotes] = useState(pedido?.notes ?? "");
   const [lineas, setLineas] = useState<Linea[]>(() => (pedido?.lineas ?? []).map(desdeInicial));
   const [guardando, setGuardando] = useState(false);
+  const [cobrando, setCobrando] = useState(false);
 
   // buscador de clientes
   const [qCliente, setQCliente] = useState("");
@@ -252,9 +255,13 @@ export function OrderForm({
     return null;
   }
 
-  async function enviar(confirmar: boolean) {
+  /** Chequeos previos; devuelve false si el usuario no puede/quiere seguir. */
+  function prechequear(confirmar: boolean): boolean {
     const err = validar();
-    if (err) return notificar({ ok: false, message: err });
+    if (err) {
+      notificar({ ok: false, message: err });
+      return false;
+    }
 
     const bajoCosto = lineas.filter((l) => {
       const p = precioDe(l);
@@ -266,18 +273,22 @@ export function OrderForm({
         `Estos renglones quedan POR DEBAJO DEL COSTO:\n\n${bajoCosto.map((l) => `${l.producto} ${l.presentacion}`).join("\n")}\n\n¿Seguir igual?`,
       )
     ) {
-      return;
+      return false;
     }
     if (confirmar) {
       const sinStock = lineas.filter((l) => (parsearNumero(l.cantidad) ?? 0) > l.stock);
       if (sinStock.length) {
-        return notificar({
+        notificar({
           ok: false,
           message: `No hay stock suficiente de: ${sinStock.map((l) => l.producto).join(", ")}. Podés guardarlo como pedido nuevo y confirmarlo cuando entre mercadería.`,
         });
+        return false;
       }
     }
+    return true;
+  }
 
+  async function enviar(confirmar: CobroConfirmacion | null) {
     setGuardando(true);
     const r = await guardarPedido(
       slug,
@@ -631,14 +642,36 @@ export function OrderForm({
               {formatearMoneda(total)}
             </span>
           </p>
-          <Button variante="secundario" onClick={() => enviar(false)} disabled={guardando}>
+          <Button
+            variante="secundario"
+            onClick={() => prechequear(false) && enviar(null)}
+            disabled={guardando}
+          >
             Guardar como Nuevo
           </Button>
-          <Button onClick={() => enviar(true)} disabled={guardando}>
+          <Button
+            onClick={() => {
+              if (!prechequear(true)) return;
+              if (payment === "contado" && total > 0) setCobrando(true);
+              else enviar({ pagos: null, cobrarAlEntregar: false });
+            }}
+            disabled={guardando}
+          >
             {guardando ? "Guardando…" : "Confirmar venta"}
           </Button>
         </div>
       </div>
+      {cobrando && (
+        <ModalCobroVenta
+          abierto
+          total={total}
+          onCerrar={() => setCobrando(false)}
+          onConfirmar={async (cobro) => {
+            setCobrando(false);
+            await enviar(cobro);
+          }}
+        />
+      )}
     </div>
   );
 }

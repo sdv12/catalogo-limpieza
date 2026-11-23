@@ -32,9 +32,9 @@ export type MiembroCatalogo = {
 };
 
 const BASE_ROL: Record<RolCatalogo, string> = {
-  admin: "Todo: precios, niveles, precios especiales, carga masiva, promos, costos y proveedores, cuenta corriente, facturación, y decide quién tiene acceso.",
+  admin: "Todo: precios, niveles, precios especiales, ventas, cajas y recibos, carga masiva, promos, costos y proveedores, cuenta corriente, facturación, y decide quién tiene acceso.",
   empleado:
-    "Base fija: productos y stock, clientes y proveedores, cargar cargos y pagos, y ponerle precio a un producto nuevo. Cambiar precios ya cargados, precios especiales y lo demás se prende por permiso, abajo.",
+    "Base fija: productos y stock, clientes y proveedores, vender, cobrar con su propia caja (con recibo) y ponerle precio a un producto nuevo. Cambiar precios ya cargados, precios especiales, ver todas las cajas y lo demás se prende por permiso, abajo.",
   viewer: "Solo consulta: ve el catálogo pero no puede cambiar nada.",
 };
 

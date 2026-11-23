@@ -15,6 +15,9 @@ export type PedidoDetalle = {
   dueDate: string | null;
   notes: string | null;
   total: number;
+  pagado: number;
+  cobrarAlEntregar: boolean;
+  recibos: { id: string; number: number; total: number; status: "valido" | "anulado" }[];
   createdAt: string;
   confirmedAt: string | null;
   deliveredAt: string | null;
@@ -61,7 +64,7 @@ export async function cargarPedido(
   const { data: o } = await supabase
     .from("orders")
     .select(
-      "id, number, status, channel, channel_name, external_ref, payment_terms, due_date, notes, total, created_at, confirmed_at, delivered_at, cancelled_at, cancel_reason, contact_name, contact_phone, contact_email, delivery_address, customer:customers(id, name, doc_number, balance, credit_limit, address, phone), order_items(id, variant_id, product_name, variant_name, sku, quantity, list_price, unit_price, price_source, price_reason, save_special, unit_cost, line_total, position, variant:product_variants(stock))",
+      "id, number, status, channel, channel_name, external_ref, payment_terms, due_date, notes, total, paid_total, collect_on_delivery, receipts(id, number, total, status), created_at, confirmed_at, delivered_at, cancelled_at, cancel_reason, contact_name, contact_phone, contact_email, delivery_address, customer:customers(id, name, doc_number, balance, credit_limit, address, phone), order_items(id, variant_id, product_name, variant_name, sku, quantity, list_price, unit_price, price_source, price_reason, save_special, unit_cost, line_total, position, variant:product_variants(stock))",
     )
     .eq("id", id)
     .eq("catalog_id", catalogo.id)
@@ -80,6 +83,14 @@ export async function cargarPedido(
     dueDate: o.due_date,
     notes: o.notes,
     total: Number(o.total),
+    pagado: Number(o.paid_total),
+    cobrarAlEntregar: o.collect_on_delivery,
+    recibos: o.receipts.map((r) => ({
+      id: r.id,
+      number: r.number,
+      total: Number(r.total),
+      status: r.status as "valido" | "anulado",
+    })),
     createdAt: o.created_at,
     confirmedAt: o.confirmed_at,
     deliveredAt: o.delivered_at,

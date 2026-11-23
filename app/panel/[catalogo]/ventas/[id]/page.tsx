@@ -60,6 +60,9 @@ export default async function PedidoPage({
           estado={p.status}
           puedeEditar={puedeEditar(catalogo)}
           esAdmin={esAdminCatalogo(catalogo)}
+          contado={p.payment === "contado"}
+          total={p.total}
+          faltaCobrar={Math.max(0, Math.round((p.total - p.pagado) * 100) / 100)}
         />
       </div>
 
@@ -107,6 +110,32 @@ export default async function PedidoPage({
               <span className="text-texto">{ETIQUETA_CONDICION_PAGO[p.payment]}</span>
               {p.payment === "cuenta_corriente" && p.dueDate && <> · vence {formatearFecha(p.dueDate)}</>}
             </p>
+            {p.payment === "contado" && p.status !== "nuevo" && p.status !== "cancelado" && (
+              <p>
+                {p.pagado >= p.total ? (
+                  <span className="text-exito">Cobrado {formatearMoneda(p.pagado)}</span>
+                ) : (
+                  <span className="text-alerta">
+                    Falta cobrar {formatearMoneda(p.total - p.pagado)}
+                    {p.cobrarAlEntregar && " (contra entrega)"}
+                  </span>
+                )}
+              </p>
+            )}
+            {p.recibos.map((r) => (
+              <p key={r.id}>
+                <a
+                  href={`/imprimir/${slug}/recibo/${r.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primario hover:underline"
+                >
+                  Recibo N° {r.number}
+                </a>{" "}
+                · {formatearMoneda(r.total)}
+                {r.status === "anulado" && <span className="text-error"> · anulado</span>}
+              </p>
+            ))}
             {p.confirmedAt && <p>Confirmado: {formatearFechaHora(p.confirmedAt)}</p>}
             {p.deliveredAt && <p>Entregado: {formatearFechaHora(p.deliveredAt)}</p>}
             {p.notes && <p className="whitespace-pre-wrap text-texto">{p.notes}</p>}

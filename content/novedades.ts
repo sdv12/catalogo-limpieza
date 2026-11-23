@@ -16,6 +16,19 @@ export interface Novedad {
 
 export const NOVEDADES: Novedad[] = [
   {
+    version: "0.12.0",
+    fecha: "2026-11-24",
+    titulo: "Caja y cobranzas con recibo",
+    cambios: [
+      "Nueva sección «Caja»: cada uno abre su caja con el efectivo inicial, cobra, y al final del día la cierra contando el efectivo. Si hay sobrante o faltante queda registrado con una nota.",
+      "Cobros con efectivo, transferencia, Mercado Pago o tarjeta, uno o varios a la vez, con cálculo de vuelto.",
+      "Cada cobro tiene un recibo numerado para imprimir. Si el cliente tiene email, se lo mandamos (cuando esté activado el envío de mails).",
+      "Los pagos de cuenta corriente se registran con «Registrar cobro» desde la ficha del cliente: se descuentan de su deuda y quedan en la caja.",
+      "Al confirmar una venta de contado se cobra en el momento, o se marca «cobrar al entregar». Un pedido sin cobrar no se puede marcar como Entregado.",
+      "Los recibos no se borran: un encargado los anula con motivo. Nuevo permiso «Caja» para ver todas las cajas y anular recibos.",
+    ],
+  },
+  {
     version: "0.11.0",
     fecha: "2026-11-23",
     titulo: "Ventas: todos los pedidos en un solo lugar",

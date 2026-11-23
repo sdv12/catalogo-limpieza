@@ -19,8 +19,8 @@ type Mensaje = { de: "usuario"; texto: string } | MensajeArau;
 const BIENVENIDA: Mensaje = {
   de: "arau",
   texto:
-    "¡Hola! Soy ARAU, el asistente del panel. Escribime tu duda (ej: \"cómo cargo un producto\") o elegí un tema.",
-  opciones: ["producto-nuevo", "stock-ajustar", "cc-cargar", "precio-lote"],
+    "¡Hola! Soy ARAU, el asistente del panel. Escribime tu duda (ej: \"cómo cargo una venta\") o elegí un tema.",
+  opciones: ["venta-nueva", "caja-cobrar", "producto-nuevo", "stock-ajustar"],
 };
 
 const SIN_RESULTADO =

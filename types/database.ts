@@ -99,6 +99,106 @@ export type Database = {
           },
         ]
       }
+      cash_movements: {
+        Row: {
+          amount: number
+          catalog_id: string
+          created_at: string
+          created_by: string
+          id: string
+          kind: string
+          reason: string
+          session_id: string
+        }
+        Insert: {
+          amount: number
+          catalog_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          kind: string
+          reason: string
+          session_id: string
+        }
+        Update: {
+          amount?: number
+          catalog_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind?: string
+          reason?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_movements_session_id_catalog_id_fkey"
+            columns: ["session_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
+      cash_sessions: {
+        Row: {
+          catalog_id: string
+          closed_at: string | null
+          closed_by: string | null
+          closing_note: string | null
+          counted_cash: number | null
+          created_at: string
+          difference: number | null
+          expected_cash: number | null
+          id: string
+          opened_at: string
+          opening_amount: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          catalog_id: string
+          closed_at?: string | null
+          closed_by?: string | null
+          closing_note?: string | null
+          counted_cash?: number | null
+          created_at?: string
+          difference?: number | null
+          expected_cash?: number | null
+          id?: string
+          opened_at?: string
+          opening_amount?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          catalog_id?: string
+          closed_at?: string | null
+          closed_by?: string | null
+          closing_note?: string | null
+          counted_cash?: number | null
+          created_at?: string
+          difference?: number | null
+          expected_cash?: number | null
+          id?: string
+          opened_at?: string
+          opening_amount?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_sessions_catalog_id_fkey"
+            columns: ["catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalogs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalog_members: {
         Row: {
           catalog_id: string
@@ -346,6 +446,7 @@ export type Database = {
       }
       customer_transactions: {
         Row: {
+          receipt_id: string | null
           order_id: string | null
           amount: number
           catalog_id: string
@@ -363,6 +464,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          receipt_id?: string | null
           order_id?: string | null
           amount: number
           catalog_id: string
@@ -380,6 +482,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          receipt_id?: string | null
           order_id?: string | null
           amount?: number
           catalog_id?: string
@@ -690,6 +793,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          collect_on_delivery: boolean
+          paid_total: number
           cancel_reason: string | null
           cancelled_at: string | null
           cancelled_by: string | null
@@ -719,6 +824,8 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          collect_on_delivery?: boolean
+          paid_total?: number
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -748,6 +855,8 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          collect_on_delivery?: boolean
+          paid_total?: number
           cancel_reason?: string | null
           cancelled_at?: string | null
           cancelled_by?: string | null
@@ -1301,6 +1410,120 @@ export type Database = {
           },
         ]
       }
+      receipt_lines: {
+        Row: {
+          amount: number
+          catalog_id: string
+          id: string
+          method: string
+          receipt_id: string
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          catalog_id: string
+          id?: string
+          method: string
+          receipt_id: string
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          catalog_id?: string
+          id?: string
+          method?: string
+          receipt_id?: string
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_lines_receipt_id_catalog_id_fkey"
+            columns: ["receipt_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "receipts"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
+      receipts: {
+        Row: {
+          catalog_id: string
+          created_at: string
+          created_by: string
+          customer_id: string | null
+          emailed_at: string | null
+          id: string
+          note: string | null
+          number: number
+          order_id: string | null
+          session_id: string
+          status: string
+          total: number
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        Insert: {
+          catalog_id: string
+          created_at?: string
+          created_by: string
+          customer_id?: string | null
+          emailed_at?: string | null
+          id?: string
+          note?: string | null
+          number?: number
+          order_id?: string | null
+          session_id: string
+          status?: string
+          total: number
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Update: {
+          catalog_id?: string
+          created_at?: string
+          created_by?: string
+          customer_id?: string | null
+          emailed_at?: string | null
+          id?: string
+          note?: string | null
+          number?: number
+          order_id?: string | null
+          session_id?: string
+          status?: string
+          total?: number
+          updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_session_id_catalog_id_fkey"
+            columns: ["session_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id", "catalog_id"]
+          },
+          {
+            foreignKeyName: "receipts_customer_id_catalog_id_fkey"
+            columns: ["customer_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id", "catalog_id"]
+          },
+          {
+            foreignKeyName: "receipts_order_id_catalog_id_fkey"
+            columns: ["order_id", "catalog_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id", "catalog_id"]
+          },
+        ]
+      }
       stock_movements: {
         Row: {
           order_id: string | null
@@ -1614,7 +1837,32 @@ export type Database = {
       category_path: { Args: { p_category_id: string }; Returns: string }
       avanzar_pedido: { Args: { p_order: string; p_status: string }; Returns: undefined }
       cancelar_pedido: { Args: { p_order: string; p_reason: string }; Returns: undefined }
-      confirmar_pedido: { Args: { p_order: string }; Returns: undefined }
+      abrir_caja: { Args: { p_catalog: string; p_opening: number }; Returns: string }
+      anular_recibo: { Args: { p_reason: string; p_receipt: string }; Returns: undefined }
+      cerrar_caja: {
+        Args: { p_counted: number; p_note: string | null; p_session: string }
+        Returns: undefined
+      }
+      confirmar_pedido: {
+        Args: { p_cobrar_al_entregar?: boolean; p_order: string; p_pagos?: Json }
+        Returns: string | null
+      }
+      efectivo_esperado: { Args: { p_session: string }; Returns: number }
+      marcar_recibo_enviado: { Args: { p_receipt: string }; Returns: undefined }
+      registrar_cobro: {
+        Args: {
+          p_catalog: string
+          p_customer: string | null
+          p_lines: Json
+          p_note: string | null
+          p_order: string | null
+        }
+        Returns: string
+      }
+      registrar_movimiento_caja: {
+        Args: { p_amount: number; p_catalog: string; p_kind: string; p_reason: string }
+        Returns: undefined
+      }
       crear_pedido_externo: { Args: { p_key_id: string; p_payload: Json }; Returns: Json }
       guardar_pedido: {
         Args: {

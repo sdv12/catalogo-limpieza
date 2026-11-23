@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Pencil, Printer, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, Pencil, Printer, XCircle, ArrowRight, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input, Label, FieldHint } from "@/components/ui/Field";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ModalCobroVenta } from "@/components/caja/ModalCobroVenta";
 import { notificar } from "@/lib/ui";
 import {
   ETIQUETA_ESTADO_PEDIDO,
@@ -26,12 +27,20 @@ export function OrderActions({
   estado,
   puedeEditar,
   esAdmin,
+  contado,
+  total,
+  faltaCobrar,
 }: {
   slug: string;
   id: string;
   estado: EstadoPedido;
   puedeEditar: boolean;
   esAdmin: boolean;
+  /** Venta de contado: se cobra al confirmar (o al entregar). */
+  contado: boolean;
+  total: number;
+  /** Lo que falta cobrar de un contado ya confirmado. */
+  faltaCobrar: number;
 }) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
@@ -68,6 +77,15 @@ export function OrderActions({
         </>
       )}
 
+      {puedeEditar && contado && estado !== "nuevo" && estado !== "cancelado" && faltaCobrar > 0 && (
+        <Link href={`/panel/${slug}/caja/cobrar?pedido=${id}`}>
+          <Button>
+            <Wallet size={15} />
+            Registrar cobro
+          </Button>
+        </Link>
+      )}
+
       {puedeEditar &&
         siguientes.map((s, i) => (
           <Button
@@ -95,6 +113,19 @@ export function OrderActions({
         </Button>
       )}
 
+      {contado && total > 0 ? (
+        confirmando && (
+          <ModalCobroVenta
+            abierto
+            total={total}
+            onCerrar={() => setConfirmando(false)}
+            onConfirmar={async (cobro) => {
+              const ok = await correr(() => confirmarPedido(slug, id, cobro));
+              if (ok) setConfirmando(false);
+            }}
+          />
+        )
+      ) : (
       <ConfirmDialog
         abierto={confirmando}
         onCerrar={() => setConfirmando(false)}
@@ -103,9 +134,10 @@ export function OrderActions({
         textoConfirmar="Confirmar"
         onConfirmar={async () => {
           setConfirmando(false);
-          await correr(() => confirmarPedido(slug, id));
+          await correr(() => confirmarPedido(slug, id, { pagos: null, cobrarAlEntregar: false }));
         }}
       />
+      )}
 
       <Modal abierto={cancelando} onCerrar={() => setCancelando(false)} titulo="Cancelar pedido" ancho="sm">
         <div className="space-y-3">

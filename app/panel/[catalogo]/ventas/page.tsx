@@ -57,7 +57,7 @@ export default async function VentasPage({
   let query = supabase
     .from("orders")
     .select(
-      "id, number, status, channel, channel_name, payment_terms, total, created_at, contact_name, customer:customers(name)",
+      "id, number, status, channel, channel_name, payment_terms, total, paid_total, created_at, contact_name, customer:customers(name)",
       { count: "exact" },
     )
     .eq("catalog_id", catalogo.id)
@@ -224,6 +224,11 @@ export default async function VentasPage({
                       </Td>
                       <Td className="text-texto-sec">
                         {ETIQUETA_CONDICION_PAGO[f.payment_terms as CondicionPago]}
+                        {f.payment_terms === "contado" &&
+                          !["nuevo", "cancelado"].includes(f.status) &&
+                          Number(f.paid_total) < Number(f.total) && (
+                            <span className="block text-xs text-alerta">A cobrar</span>
+                          )}
                       </Td>
                       <Td>
                         <Badge tono={TONO_ESTADO_PEDIDO[f.status as EstadoPedido]}>

@@ -12,7 +12,7 @@ export const ETIQUETA_ROL: Record<RolEfectivo, string> = {
 
 /**
  * Permisos opcionales que un admin puede prenderle a un empleado, además
- * de la base (productos/stock, clientes/proveedores, cargar cargo/pago,
+ * de la base (productos/stock, clientes/proveedores, vender, cobrar con su caja, cargar cargos,
  * poner precio a un producto o presentación nueva).
  * admin los tiene todos siempre; viewer ninguno.
  */
@@ -24,6 +24,7 @@ export const PERMISOS_CATALOGO = [
   "cuenta_corriente_admin",
   "usuarios",
   "precios_especiales",
+  "caja_admin",
 ] as const;
 export type PermisoCatalogo = (typeof PERMISOS_CATALOGO)[number];
 
@@ -35,6 +36,7 @@ export const ETIQUETA_PERMISO: Record<PermisoCatalogo, string> = {
   cuenta_corriente_admin: "Cuenta corriente: ajustes, notas y correcciones",
   usuarios: "Gestionar usuarios del catálogo",
   precios_especiales: "Precios especiales por cliente",
+  caja_admin: "Caja: ver todas las cajas y anular recibos",
 };
 
 export const DESCRIPCION_PERMISO: Record<PermisoCatalogo, string> = {
@@ -45,11 +47,13 @@ export const DESCRIPCION_PERMISO: Record<PermisoCatalogo, string> = {
   carga_masiva: "Importar productos desde una planilla CSV/Excel.",
   promos: "Armar el carrusel, los destacados y las ofertas de la portada.",
   cuenta_corriente_admin:
-    "Cargar ajustes manuales y notas de crédito/débito, y corregir o eliminar movimientos ya cargados (cargos y pagos los carga cualquier empleado).",
+    "Cargar pagos a mano (sin recibo), ajustes y notas de crédito/débito, y corregir o eliminar movimientos ya cargados. Los cobros normales se hacen desde la Caja con recibo.",
   usuarios:
     "Agregar, cambiar el rol/permisos o quitar a otros usuarios del catálogo (excepto administradores: eso sigue siendo solo de un admin).",
   precios_especiales:
     "Darle a un cliente puntual un precio distinto en un producto, sin cambiar el precio general ni la tienda.",
+  caja_admin:
+    "Ver y cerrar las cajas de todos, revisar diferencias de arqueo y anular recibos (cada empleado siempre maneja su propia caja).",
 };
 
 export type CatalogoAccesible = {

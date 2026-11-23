@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Plus, Trash2, Wallet } from "lucide-react";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select, Textarea } from "@/components/ui/Field";
@@ -111,7 +112,15 @@ export function CustomerLedger({
             )}
           </div>
           {puedeCargar && (
-            <Button tamano="sm" onClick={() => setAbierto((v) => !v)}>
+            <Link href={`/panel/${slug}/caja/cobrar?cliente=${customerId}`}>
+              <Button tamano="sm">
+                <Wallet size={14} />
+                Registrar cobro
+              </Button>
+            </Link>
+          )}
+          {puedeCargar && (
+            <Button tamano="sm" variante="secundario" onClick={() => setAbierto((v) => !v)}>
               <Plus size={14} />
               Movimiento
             </Button>

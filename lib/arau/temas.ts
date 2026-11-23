@@ -28,6 +28,7 @@ export type Tema = {
 export const CATEGORIAS = [
   "General",
   "Ventas",
+  "Caja",
   "Productos",
   "Stock",
   "Precios",
@@ -297,7 +298,7 @@ El ajuste queda registrado en "Actividad".`,
 2. Elegí el cliente. Sin cliente es consumidor final y solo puede ser de contado.
 3. Elegí la condición de pago: Contado o Cuenta corriente (con fecha de vencimiento).
 4. Agregá productos con el buscador (nombre, marca, SKU o código de barras) y poné las cantidades. El precio sale solo: el especial del cliente si tiene, si no el de su nivel.
-5. "Confirmar venta" descuenta el stock y, si es a cuenta corriente, carga la deuda. "Guardar como Nuevo" lo deja pendiente para confirmar después.`,
+5. "Confirmar venta" descuenta el stock. Si es de contado te pide cómo paga (o "cobrar al entregar"); si es a cuenta corriente carga la deuda. "Guardar como Nuevo" lo deja pendiente para confirmar después.`,
     relacionados: ["venta-estados", "venta-precio", "venta-stock"],
   },
   {
@@ -334,7 +335,7 @@ Por debajo del costo solo lo puede hacer un administrador. Todo queda en "Activi
     claves: ["no hay stock", "stock suficiente", "no me deja confirmar", "limite cuenta corriente", "supera el limite", "limite de credito", "no alcanza"],
     respuesta: `- "No hay stock suficiente": el stock no alcanza para lo que pide. Guardalo como Nuevo y confirmalo cuando entre la mercadería (cargala con un ajuste de stock "Ingreso").
 - "Supera su límite de cuenta corriente": con esa venta el cliente pasa su límite. Solo un administrador puede confirmarla, o cobrale antes y bajá su saldo.`,
-    relacionados: ["stock-ajustar", "cc-cargar"],
+    relacionados: ["stock-ajustar", "caja-cobrar"],
   },
   {
     id: "venta-cancelar",
@@ -359,6 +360,81 @@ Por debajo del costo solo lo puede hacer un administrador. Todo queda en "Activi
 - No tocan stock ni deuda hasta que alguien los confirma.
 - Las claves de cada canal las crea un administrador en "Ventas" → "Canales". Si una tienda deja de cargar pedidos, revisá que su clave esté activa.`,
     relacionados: ["venta-estados"],
+  },
+
+  // ───────────────────────── Caja
+  {
+    id: "caja-abrir",
+    categoria: "Caja",
+    titulo: "Abrir mi caja",
+    claves: ["abrir caja", "abro la caja", "caja", "empezar el dia", "inicio de caja", "cambio inicial", "mi caja"],
+    requiere: "editar",
+    respuesta: `Cada uno cobra con su propia caja.
+1. Andá a "Caja".
+2. Poné el efectivo con el que arrancás (el cambio que tenés; puede ser 0).
+3. "Abrir caja".
+Sin la caja abierta no podés cobrar ni confirmar ventas de contado cobrando en el momento.`,
+    relacionados: ["caja-cobrar", "caja-cerrar"],
+  },
+  {
+    id: "caja-cobrar",
+    categoria: "Caja",
+    titulo: "Cobrarle a un cliente (pago de cuenta corriente)",
+    claves: ["cobrar", "cobro", "pago", "registrar pago", "pago recibido", "me pago", "pago cliente", "recibo", "registrar cobro", "cobranza", "pago de deuda", "transferencia", "mercado pago", "tarjeta"],
+    requiere: "editar",
+    respuesta: `1. Entrá al cliente → "Cuenta corriente" → "Registrar cobro" (o desde "Caja" → "Cobrar a un cliente").
+2. Elegí cómo paga: efectivo, transferencia, Mercado Pago o tarjeta. Puede ser más de uno (ej: parte en efectivo y parte por transferencia). Para transferencias y MP anotá el N° de operación.
+3. "Registrar cobro". Se descuenta de su deuda y sale un recibo numerado para imprimir. Si el cliente tiene email, se lo mandamos.
+Los pagos ya no se cargan a mano en la cuenta corriente: pasan por la caja para que quede el recibo.`,
+    relacionados: ["caja-abrir", "recibo-anular"],
+  },
+  {
+    id: "caja-venta-contado",
+    categoria: "Caja",
+    titulo: "Cobrar una venta de contado",
+    claves: ["venta contado", "cobrar venta", "contado", "vuelto", "contra entrega", "cobrar al entregar", "a cobrar", "falta cobrar"],
+    requiere: "editar",
+    respuesta: `Al confirmar una venta de contado te pide cómo paga:
+- Cargá el medio y el importe. Si te da de más en efectivo, te calcula el vuelto.
+- O marcá "Cobrar al entregar" (contra entrega): se confirma sin cobrar y queda "A cobrar".
+Un pedido "A cobrar" no se puede marcar Entregado hasta registrar el cobro: entrá al pedido → "Registrar cobro".`,
+    relacionados: ["venta-nueva", "caja-abrir"],
+  },
+  {
+    id: "caja-cerrar",
+    categoria: "Caja",
+    titulo: "Cerrar la caja (arqueo)",
+    claves: ["cerrar caja", "cierre de caja", "arqueo", "fin del dia", "rendir caja", "contar plata", "faltante", "sobrante", "diferencia de caja"],
+    requiere: "editar",
+    respuesta: `1. En "Caja" tocá "Cerrar caja".
+2. Contá el efectivo que hay y anotalo. Solo efectivo: transferencias, MP y tarjetas no se cuentan.
+3. Si no coincide con lo esperado, te pide una nota explicando la diferencia (sobrante o faltante).
+Lo esperado = efectivo inicial + efectivo cobrado + ingresos − egresos. La diferencia queda registrada y la ve el encargado.`,
+    relacionados: ["caja-egreso"],
+  },
+  {
+    id: "caja-egreso",
+    categoria: "Caja",
+    titulo: "Sacar o poner plata en la caja (egreso / ingreso)",
+    claves: ["egreso", "ingreso", "retiro", "sacar plata", "retirar efectivo", "gasto", "pagar flete", "poner cambio"],
+    requiere: "editar",
+    respuesta: `1. En "Caja" tocá "Ingreso / egreso".
+2. Elegí si sale (egreso) o entra (ingreso) plata, el importe y el motivo (ej: "retiro para el dueño", "pago de flete").
+Es solo efectivo y queda con tu nombre. Se tiene en cuenta en el arqueo.`,
+    relacionados: ["caja-cerrar"],
+  },
+  {
+    id: "recibo-anular",
+    categoria: "Caja",
+    titulo: "Me equivoqué en un cobro (anular recibo)",
+    claves: ["anular recibo", "recibo mal", "cobre mal", "cobro mal", "borrar cobro", "borrar pago", "reimprimir recibo", "mandar recibo"],
+    requiere: "caja_admin",
+    respuesta: `Los recibos no se borran: se anulan con motivo.
+1. En "Caja" (o la caja de esa persona) buscá el recibo y tocá el ícono de anular.
+2. Escribí el motivo y confirmá.
+Si era un pago de cuenta corriente, la deuda del cliente vuelve a subir; si era de un pedido, vuelve a quedar "A cobrar". Después registrá el cobro bien.
+Para reimprimir o reenviar por mail, abrí el recibo tocando su número.`,
+    relacionados: ["caja-cobrar"],
   },
 
   // ───────────────────────── Precios
@@ -452,15 +528,15 @@ Cargale el email: lo usan los avisos automáticos de vencimiento.`,
   {
     id: "cc-cargar",
     categoria: "Clientes",
-    titulo: "Registrar una venta o un pago en cuenta corriente",
-    claves: ["cuenta corriente", "pago", "cliente", "registrar", "cobro", "cobrar", "pago recibido", "venta", "cargo", "factura", "registrar pago", "fiado", "deuda", "saldo", "nota de credito", "nota de debito"],
+    titulo: "Movimientos de cuenta corriente (cargos, notas, ajustes)",
+    claves: ["cuenta corriente", "cliente", "registrar", "cargo", "factura", "fiado", "deuda", "saldo", "nota de credito", "nota de debito", "movimiento cuenta"],
     requiere: "editar",
     respuesta: `1. Andá a "Clientes" y entrá al cliente.
 2. En "Cuenta corriente" agregá un movimiento.
 3. Elegí el tipo:
-- "Cargo (venta / factura)": suma deuda y lleva fecha de vencimiento.
-- "Pago recibido": resta deuda.
-- "Nota de crédito", "Nota de débito" y "Ajuste manual": solo con el permiso de cuenta corriente (o un administrador), porque pueden borrar deuda.
+- "Cargo (venta / factura)": suma deuda y lleva fecha de vencimiento. Las ventas a cuenta corriente confirmadas en "Ventas" ya cargan el cargo solas.
+- Los pagos se registran con "Registrar cobro" (pasan por tu caja y sale recibo).
+- "Pago recibido" a mano, "Nota de crédito", "Nota de débito" y "Ajuste manual": solo con el permiso de cuenta corriente (o un administrador), porque pueden borrar deuda.
 4. Poné el importe, el vencimiento si corresponde y una nota (ej: N° de comprobante).
 5. Guardá. El saldo se recalcula solo.`,
     relacionados: ["cc-corregir", "cc-deudores"],

@@ -69,6 +69,19 @@ export const ETIQUETA_CAMPO: Record<string, string> = {
   contact_phone: "Teléfono de contacto",
   delivery_address: "Dirección de entrega",
   order_id: "Pedido",
+  opening_amount: "Efectivo inicial",
+  expected_cash: "Efectivo esperado",
+  counted_cash: "Efectivo contado",
+  difference: "Diferencia de arqueo",
+  closing_note: "Nota de cierre",
+  closed_at: "Cerrada",
+  void_reason: "Motivo de anulación",
+  voided_at: "Anulado",
+  emailed_at: "Enviado por mail",
+  paid_total: "Cobrado",
+  collect_on_delivery: "Cobrar al entregar",
+  receipt_id: "Recibo",
+  session_id: "Caja",
   ends_on: "Vence",
   customer_id: "Cliente",
   balance: "Saldo",
@@ -125,7 +138,7 @@ export function formatearValorAuditoria(
 ): string {
   if (v == null || v === "") return "—";
   if (typeof v === "boolean") return v ? "Sí" : "No";
-  if (["price", "amount", "balance", "credit_limit", "cost", "discount_value", "total", "unit_price", "list_price", "line_total", "unit_cost"].includes(field) )
+  if (["price", "amount", "balance", "credit_limit", "cost", "discount_value", "total", "unit_price", "list_price", "line_total", "unit_cost", "opening_amount", "expected_cash", "counted_cash", "difference", "paid_total"].includes(field) )
     return field === "discount_value" ? formatearNumero(Number(v)) : formatearMoneda(Number(v));
   if (["stock", "min_stock", "size_value", "sort_order", "position"].includes(field))
     return formatearNumero(Number(v));
@@ -152,6 +165,8 @@ export function formatearValorAuditoria(
   if (field === "channel") return ETIQUETA_CANAL[v as CanalPedido] ?? String(v);
   if (field === "price_source") return ETIQUETA_ORIGEN_PRECIO[String(v)] ?? String(v);
   if (field === "order_id") return "un pedido";
+  if (field === "session_id") return "una caja";
+  if (field === "receipt_id") return "un recibo";
   if (field === "size_unit")
     return ETIQUETA_UNIDAD[v as keyof typeof ETIQUETA_UNIDAD] ?? String(v);
   if (["primary_category_id", "parent_id", "category_id"].includes(field))
