@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
+import { DEMO_LOCAL } from "@/lib/demo/activo";
 
 /** Rutas públicas (no requieren sesión). */
 const RUTAS_PUBLICAS = [
@@ -18,6 +19,17 @@ const RUTAS_PUBLICAS = [
  * Se ejecuta desde `proxy.ts` (antes "middleware" en Next < 16).
  */
 export async function updateSession(request: NextRequest) {
+  // Modo demo local: sin login, el usuario se elige con la barra del demo.
+  if (DEMO_LOCAL) {
+    if (request.nextUrl.pathname === "/login") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/panel";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
